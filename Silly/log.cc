@@ -1,4 +1,4 @@
-/*************************************************************************
+/************************************************************************
 	> File Name: log.cc
 	> Author: chaoqiangxie
 	> Mail: 2481086105@qq.com 
@@ -8,6 +8,7 @@
 #include "log.h"
 #include <string>
 #include <ostream>
+#include <iostream>
 
 
 namespace Silly{
@@ -15,19 +16,37 @@ namespace Silly{
 Logger::ptr Logger::m_root = Logger::ptr(new Logger("root"));
 
 Logger::Logger(const char * name)
-	:m_name(name)
-	,m_level(LogLevel::NOTSET){
+	:m_name(name){
 	
 }
 
+std::string LogLevel::toString(LogLevel::Level level){
+	switch(level){
+#define XX(level) \
+		case LogLevel::level: \
+			return #level;\
+
+		XX(EMERG);
+		XX(FATAL);
+		XX(ALERT);
+		XX(CRIT);
+		XX(ERROR);
+		XX(WARN);
+		XX(NOTICE);
+		XX(INFO);
+		XX(DEBUG);
+		XX(NOTSET);
+#undef XX
+		default:
+			return "UNKNOWN";
+	}
+}
+
 void Logger::log(LogLevel::Level level,const std::string & content){
-	//日志等级高于当前优先级时，该日志被记录
-	//数值越小，优先级越高
-	if(level <= m_level){
-		//记录日志
-		for(auto & it : m_appenders){//每个appender都要记录
-			it.second->log(level,content);
-		}
+	//记录日志
+	auto event = getEvent(level,content);
+	for(auto & it : m_appenders){//每个appender都要记录
+		it.second->log(event);
 	}
 }
 
@@ -105,8 +124,17 @@ Logger::ptr Logger::getInstance(const char * name){
 		return nullptr;
 }
 
+LogEvent::ptr Logger::getEvent(LogLevel::Level level,const std::string & content){
+	LogEvent::ptr event = LogEvent::ptr(new LogEvent());
+	event->setLevel(level);
+	event->setContent(content);
+	return event;
+}
+
 Appender::Appender(const char * name)
-	:m_name(name) {
+	:m_name(name),
+	 m_level(LogLevel::NOTSET),
+	 m_formatter(nullptr){
 	
 	}
 
@@ -116,8 +144,71 @@ m_os(os) {
 
 }
 
-void OstreamAppender::log(LogLevel::Level level , const std::string & content){
-	m_os << content;	
+void OstreamAppender::log(LogEvent::ptr event){
+	//格式化器存在且输出日志级别高于Appender级别时，输出
+	if(m_formatter){
+		if(m_level >= event->getLevel()){
+			m_os << m_formatter->format(event) << std::endl;
+		}
+	} else {
+		std::cout << "[Error] Formatter is Null!" << std::endl;
+	}	
 }
 
+TimeStamp::TimeStamp(time_t time)
+	:m_time(time),
+	m_format("%Y-%m-%d %H:%M:%S"),
+	m_info(setTimePtr())
+	{
+		
+	}
+
+
+std::string TimeStamp::getTime() const{
+	//格式化m_time
+	//格式化默认格式为%Y-%m-%d %H:%M:%S
+	//by strftime
+	char buffer[80];
+	::strftime(buffer,80,m_format.c_str(),m_info);
+	return buffer;
+}
+
+TimeStamp & TimeStamp::operator=(const TimeStamp & rhs){
+	if(this == &rhs)
+		return *this;
+	m_time = rhs.m_time;
+	m_info = rhs.m_info;
+	return *this;
+}
+
+struct tm * TimeStamp::setTimePtr(){
+	::time(&m_time);
+	return ::localtime(&m_time);
+}
+
+
+std::string BasicFormatter::format(const LogEvent::ptr event){
+	m_ss << "[" + LogLevel::toString(event->getLevel())
+			  << "] " <<  event->getTimeStamp().getTime()
+			  << " " << event->getContent();
+	return m_ss.str();
+};
+
+AppenderBuilder::AppenderBuilder(const char * name)
+:m_name(name) {
+
+}
+
+AppenderBuilder & AppenderBuilder::level(LogLevel::Level level){
+	m_level = level;
+	return *this;
+}
+
+OstreamAppender::OstreamAppenderBuilder(const char * name,std::ostream & os)
+	:m_name(name),
+	m_os(os) {}
+
+OstreamAppender::OstreamAppenderBuilder & OstreamAppender::OstreamAppenderBuilder::level(LogLevel::Level level){
+	
+}
 }//end of namespace

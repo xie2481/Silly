@@ -7,13 +7,22 @@
 
 #include "log.h"
 #include <iostream>
-
+enum Test{
+	Test
+};
 using namespace Silly;
 int main(){
 	
 	Logger::ptr root = Logger::getRoot();
 	Logger::ptr info = root->getInstance("test");
-	info->addAppender(OstreamAppender::ptr(new OstreamAppender("test",std::cout)));
+	auto appender = OstreamAppender::ptr(new OstreamAppender("test",std::cout));
+	appender->setFormatter(BasicFormatter::ptr(new BasicFormatter()));
+	info->addAppender(appender);
 	info->log(LogLevel::DEBUG,"test");
+	/*TimeStamp time;
+	std::cout << time.getDay() << std::endl;
+	std::cout << time.getMonth() << std::endl;
+	std::cout << time.getYear() << std::endl;*/
+	
 	return 0;
 }

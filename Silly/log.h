@@ -11,6 +11,9 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <sstream>
+#include <time.h>
+
 namespace Silly{
 
 //定义日志等级
@@ -20,7 +23,7 @@ struct LogLevel{
 	 * */
  enum Level{
 	EMERG = 0,
-	FATAL = 0,
+	FATAL = 50,
 	ALERT = 100,
 	CRIT = 200,
 	ERROR = 300,
@@ -30,19 +33,148 @@ struct LogLevel{
 	DEBUG = 700,
 	NOTSET = 800
  };
+ /*
+  * brief:输出优先级的字符串
+  * */
+ static std::string toString(LogLevel::Level level);
+};
+
+//格式化时间
+class TimeStamp{
+public:
+	/*
+	 * brief:TimeStamp Constructor
+	 * parmarter [in] time : 设置m_time
+	 * */
+	TimeStamp(time_t time = ::time(0));
+
+	/*
+	 * brief:getTime
+	 * parmarter [out] : 获取m_time的时间戳
+	 * */
+	std::string getTime() const;
+
+	/*
+	 * brief:setTime
+	 * parmarter [in] time : 设置m_time
+	 * */
+	void setTime(time_t time) { m_time = time; setTimePtr();}
+
+	/*
+	 * brief:获得秒数
+	 * */
+	int getSecond() const { return m_info->tm_sec;} 
+
+	/*
+	 * brief:获得分钟信息
+	 * */
+	int getMinute() const { return m_info->tm_min;}
+
+	/*
+	 * brief:获得小时信息
+	 * */
+	int getHour() const { return m_info->tm_hour;}
+
+	/*
+	 * brief:获得一个月中第几天的信息
+	 * */
+	int getDay() const { return m_info->tm_mday;}
+
+	/*
+	 * brief:获得月份信息
+	 * */
+	int getMonth() const { return m_info->tm_mon;}
+
+	/*
+	 * brief:获得年份信息
+	 * */
+	int getYear() const { return m_info->tm_year + 1900;}
+
+	TimeStamp & operator=(const TimeStamp & rhs);
+
+private:
+	time_t m_time;
+	const std::string m_format;
+	struct tm * m_info;
+private:
+	/*
+	 * 设置指向时间的指针
+	 * */
+	struct tm * setTimePtr();
+};
+
+class Logger;
+//定义输出事件
+class LogEvent{
+public:
+	typedef std::shared_ptr<LogEvent> ptr;
+	/*
+	 * brief:get set
+	 * */
+	const std::string & getLogName() const { return m_logName;}
+	
+	void setLogName(const std::string & logName) { m_logName = logName;}
+
+
+	const std::string & getContent() const { return m_content;}
+
+	void setContent(const std::string & content) { m_content = content;}
+
+	LogLevel::Level getLevel() const{ return m_level;}
+
+	void setLevel(LogLevel::Level level) { m_level = level; }
+
+	const std::string & getThreadName() const { return m_threadName;}
+
+	void setThreadName(const std::string & threadName) { m_threadName = threadName;}
+
+	const TimeStamp & getTimeStamp() const { return m_timeStamp;}
+
+	void setTimeStame(const TimeStamp & timeStamp) { m_timeStamp = timeStamp;}
+private:
+	//日志输出器的名字
+	std::string  m_logName;
+	//日志内容
+    std::string m_content;
+	//日志优先级
+	LogLevel::Level m_level;
+	//线程名字
+	std::string m_threadName;
+	//时间戳
+	TimeStamp m_timeStamp;
+};
+
+class Appender; 
+//定义日志格式器
+class Formatter{
+public:
+	typedef std::shared_ptr<Formatter> ptr;
+	virtual ~Formatter() {}
+
+	/*
+	 * brief:定义纯虚函数，日志格式器的格式化函数
+	 * */
+	virtual std::string format(const LogEvent::ptr event) = 0;
+protected:
+	//格式化日志格式时使用，存储下来，防止多次创建造成的开销
+	std::stringstream m_ss;
+};
+
+//定义基础的日志格式器
+class BasicFormatter : public Formatter{
+public:
+	/*
+	 * brief:实现父类的format,输出格式为[优先级] 时间戳 内容
+	 * */
+	std::string format(const LogEvent::ptr event) override;
 };
 
 //定义日志目的地
 class Appender{
+	friend class Logger;
 public:
 	typedef std::shared_ptr<Appender> ptr;
 
-	/*
-	 * brief:Appender Constructor
-	 * parmarter[in] name : Appender名字
-	 * */
-	Appender(const char * name);
-	
 	/*
 	 * brief:获取Appender名字
 	 * */
@@ -53,11 +185,45 @@ public:
 	 * parmarter[in] level : 日志等级
 	 * parmarter[in] content : 日志内容
 	 * */
-	virtual void log(LogLevel::Level level,const std::string & content) = 0;
 	virtual ~Appender() {}
+
+	/*
+	 * brief:set Level
+	 * */
+	void setLevel(LogLevel::Level level) { m_level = level;}
+
+	/*
+	 * brief:get Appender level
+	 * */
+	LogLevel::Level getLevel() const { return m_level;}
+
+	void setFormatter(Formatter::ptr formatter) { m_formatter = formatter; }
 protected:
+	/*
+	 * brief:Appender Constructor
+	 * parmarter[in] name : Appender名字
+	 * */
+	Appender(const char * name);
 	//Appender名字
 	const char * m_name;
+	//Appender优先级
+	LogLevel::Level m_level;
+	//Appender的格式化器
+	Formatter::ptr m_formatter;
+private:
+	virtual void log(LogEvent::ptr event) = 0;
+};
+
+//定义AppenderBuilder
+class AppenderBuilder{
+public:
+	/*
+	 * brief:设置Appender优先级
+	 * */
+	AppenderBuilder & level(LogLevel::Level level);
+	virtual ~AppenderBuilder() {}
+protected:
+	LogLevel::Level m_level;
 };
 
 /*
@@ -66,23 +232,31 @@ protected:
 class OstreamAppender : public Appender{
 public:
 	typedef std::shared_ptr<OstreamAppender> ptr;
+	
+	static OstreamAppender::ptr getInstance();
+
+private:
 	/*
 	 * brief:OstreamAppender Constructor
 	 * parmarter[in] name : OstreamAppender名字
 	 * parmarter[in ref] os : 目标输出流
 	 * */
 	OstreamAppender(const char * name ,std::ostream & os);
-
 	/*
 	 * brief:实现基类中的log
 	 * */
-	void log(LogLevel::Level level , const std::string & content) override;
+	void log(LogEvent::ptr event) override;
 private:
 	std::ostream & m_os;
 };
 
+//定义OstreamAppender
+class OstreamAppender : public AppenderBuilder{
+
+};
 //定义日志输出器
 class Logger : public std::enable_shared_from_this<Logger>{
+	friend class LogEvent;
 public:
 	typedef std::shared_ptr<Logger> ptr;
 
@@ -154,12 +328,6 @@ public:
 	void notset(const std::string & content);
 	
 	/*
-	 * brief:设置Logger优先级
-	 * parmarter[in] level:优先级的设置参数
-	 * */
-	void setLevel(LogLevel::Level level) { m_level = level;}
-
-	/*
 	 * brief:添加Appender
 	 * parmarter[in] appender: 待添加的appender
 	 * */
@@ -195,11 +363,6 @@ private:
 	Logger(const char * name = "root");
 
 	/*
-	 * brief:Logger优先级
-	 * */
-	LogLevel::Level m_level;
-
-	/*
 	 * 存储所有的appender
 	 * */
 	std::unordered_map<const char * , Appender::ptr> m_appenders;
@@ -208,6 +371,15 @@ private:
 	 * 定义根日志输出器
 	 * */
 	static Logger::ptr m_root;
+
+private:
+	/*
+	 * brief:获取LogEvent指针
+	 * parmarter [in] level:日志事件级别
+	 * parmarter [in] content:日志事件内容
+	 * parmarter [out] LogEvent指针
+	 * */
+	LogEvent::ptr getEvent(LogLevel::Level level,const std::string & content);
 };
 
 }//end of namespace
