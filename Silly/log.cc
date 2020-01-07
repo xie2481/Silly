@@ -6,14 +6,20 @@
  ************************************************************************/
 
 #include "log.h"
+#include "util.h"
 #include <string>
 #include <ostream>
 #include <iostream>
-
+#include <string.h>
+#define MAXBUFFER 1024
 
 namespace Silly{
 
+//公用日志记录内存,Logger::emerg等函数使用
+static char sprint_buf[MAXBUFFER] = {0};
 Logger::ptr Logger::m_root = Logger::ptr(new Logger("root"));
+
+std::unordered_map<const char * , Logger::ptr> LoggerManager::m_loggers; 
 
 Logger::Logger(const char * name)
 	:m_name(name){
@@ -50,44 +56,83 @@ void Logger::log(LogLevel::Level level,const std::string & content){
 	}
 }
 
+#define XX(msg,level) \
+    va_list args;  \
+    int n = 0;     \
+    va_start(args,msg);\
+    n = ::vsprintf(sprint_buf,msg,args); \
+    va_end(args); \
+    level(std::string(sprint_buf)) 
+
 void Logger::emerg(const std::string & content){
 	log(LogLevel::EMERG,content);
+}
+
+void Logger::emerg(const char * msg,...){
+    XX(msg,emerg);
 }
 
 void Logger::fatal(const std::string & content){
 	log(LogLevel::FATAL,content);
 }
+void Logger::fatal(const char * msg,...){
+    XX(msg,fatal);
+}
 
 void Logger::alert(const std::string & content){
 	log(LogLevel::ALERT,content);
+}
+void Logger::alert(const char * msg,...){
+    XX(msg,alert);
 }
 
 void Logger::crit(const std::string & content){
 	log(LogLevel::CRIT,content);
 }
+void Logger::crit(const char * msg,...){
+    XX(msg,crit);
+}
 
 void Logger::error(const std::string & content){
 	log(LogLevel::ERROR,content);
+}
+void Logger::error(const char * msg,...){
+    XX(msg,error);
 }
 
 void Logger::warn(const std::string & content){
 	log(LogLevel::WARN,content);
 }
+void Logger::warn(const char * msg,...){
+    XX(msg,warn);
+}
 
 void Logger::notice(const std::string & content){
 	log(LogLevel::NOTICE,content);
+}
+void Logger::notice(const char * msg,...){
+    XX(msg,notice);
 }
 
 void Logger::info(const std::string & content){
 	log(LogLevel::INFO,content);
 }
+void Logger::info(const char * msg,...){
+    XX(msg,info);
+}
 
 void Logger::debug(const std::string & content){
 	log(LogLevel::DEBUG,content);
 }
+void Logger::debug(const char * msg,...){
+    XX(msg,debug);
+}
 
 void Logger::notset(const std::string & content){
 	log(LogLevel::NOTSET,content);
+}
+void Logger::notset(const char * msg,...){
+    XX(msg,notset);
 }
 
 void Logger::addAppender(Appender::ptr appender){
@@ -122,6 +167,16 @@ Logger::ptr Logger::getInstance(const char * name){
 		return Logger::ptr(new Logger(name));
 	else
 		return nullptr;
+}
+
+Logger::ptr LoggerManager::getLogger(const char * name){
+    auto it = m_loggers.find(name);
+    if(it != m_loggers.end()){//当前logger存在
+        return it->second;
+    } else {//创造一个新的
+        m_loggers.insert(std::make_pair(name,Logger::getRoot()->getInstance(name)));
+        return m_loggers[name];
+    }
 }
 
 LogEvent::ptr Logger::getEvent(LogLevel::Level level,const std::string & content){
@@ -159,6 +214,28 @@ void OstreamAppender::log(LogEvent::ptr event){
 	}	
 }
 
+FileAppender::FileAppender(const char * name ,const std::string & filename)
+:Appender(name){
+    m_ofs.open(filename,std::ios::out | std::ios::app);
+}
+
+Appender::ptr FileAppender::getInstance(const char * name ,const std::string & filename){
+    return FileAppender::ptr(new FileAppender(name,filename));
+}
+
+void FileAppender::log(LogEvent::ptr event){
+	//格式化器存在且输出日志级别高于Appender级别时，输出
+	if(m_formatter){
+		if(m_level >= event->getLevel()){
+			m_ofs << m_formatter->format(event) << std::endl;
+		}
+	} else {
+		m_ofs << "[Error] Formatter is Null!" << std::endl;
+	}	
+}
+FileAppender::~FileAppender(){
+    m_ofs.close();
+}
 TimeStamp::TimeStamp(time_t time,const std::string & format)
 	:m_time(time),
 	m_format(format),
@@ -226,6 +303,14 @@ void LevelFormatterItem::format(std::stringstream & ss,const LogEvent::ptr event
     ss << LogLevel::toString(event->getLevel());
 }
 
+void TabFormatterItem::format(std::stringstream & ss,const LogEvent::ptr event) {
+    ss << '\t';
+}
+
+void ThreadFormatterItem::format(std::stringstream & ss,const LogEvent::ptr event){
+    ss << Silly::getThreadID();      
+}
+
 std::string PatternFormatter::format(const LogEvent::ptr event){
     for(auto & item : m_items){
         item->format(m_ss,event);
@@ -239,6 +324,8 @@ std::string PatternFormatter::format(const LogEvent::ptr event){
  * %m 消息
  * %n 换行符
  * %p 优先级
+ * %T Tab
+ * %t ThreadID
  * 基本格式 %xx %xx{} %%转义
  * */
 void PatternFormatter::setConversionPattern(const std::string & pattern){
@@ -280,12 +367,19 @@ void PatternFormatter::setPattern(const std::string & pattern,int & begin){
              }
              m_items.push_back(DateFormatterItem::ptr(new DateFormatterItem()));
              break;
+        case 'T':
+             m_items.push_back(TabFormatterItem::ptr(new TabFormatterItem()));
+             break;
+        case 't':
+             m_items.push_back(ThreadFormatterItem::ptr(new ThreadFormatterItem()));
+             break;
         default:
              --begin;
              break;
     }
     ++begin;
 }
+
 void PatternFormatter::addContent(std::string & str){
     if(str == "")
         return;

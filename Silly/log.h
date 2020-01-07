@@ -14,6 +14,9 @@
 #include <sstream>
 #include <time.h>
 #include <vector>
+#include <fstream>
+#include <stdarg.h>
+
 
 namespace Silly{
 
@@ -129,6 +132,10 @@ public:
 
 	void setThreadName(const std::string & threadName) { m_threadName = threadName;}
 
+    uint32_t getThreadID() const { return m_threadID; }
+
+    void setThreadID(uint32_t id) { m_threadID = id;} 
+
 	const TimeStamp & getTimeStamp() const { return m_timeStamp;}
 
 	void setTimeStame(const TimeStamp & timeStamp) { m_timeStamp = timeStamp;}
@@ -141,6 +148,8 @@ private:
 	LogLevel::Level m_level;
 	//线程名字
 	std::string m_threadName;
+    //线程号
+    uint32_t m_threadID;
 	//时间戳
 	TimeStamp m_timeStamp;
 };
@@ -198,6 +207,7 @@ class ContentFormatterItem : public FormatterItem
     private:
         const std::string m_msg;
 };
+
 class DateFormatterItem : public FormatterItem 
 {
     public:
@@ -207,7 +217,6 @@ class DateFormatterItem : public FormatterItem
     private:
         std::string m_format;
 };
-
 
 class MessageFormatterItem : public FormatterItem
 {
@@ -222,11 +231,27 @@ class LevelFormatterItem : public FormatterItem
         typedef std::shared_ptr<LevelFormatterItem> ptr;
         void format(std::stringstream & ss,const LogEvent::ptr event) override;        
 };
+
 class LineFormatterItem : public FormatterItem
 {
     public:
         typedef std::shared_ptr<LineFormatterItem> ptr;
         void format(std::stringstream & ss,const LogEvent::ptr event) override;        
+};
+
+class TabFormatterItem : public FormatterItem
+{
+    public:
+        typedef std::shared_ptr<TabFormatterItem> ptr;
+        void format(std::stringstream & ss,const LogEvent::ptr event) override;
+};
+
+
+class ThreadFormatterItem : public FormatterItem
+{
+    public:
+        typedef std::shared_ptr<ThreadFormatterItem> ptr;
+        void format(std::stringstream & ss,const LogEvent::ptr event) override;
 };
 
 class PatternFormatter : public Formatter
@@ -256,11 +281,10 @@ class PatternFormatter : public Formatter
          std::string getDateFormat(const std::string & pattern,int begin);
 
          /*
-          * brief:递归处理格式串
+          * brief:递归处理格式串,添加新格式时，需要在函数中注册
           * */
          void setPattern(const std::string & pattern,int & begin);
 };
-
 
 //定义日志目的地
 class Appender{
@@ -332,6 +356,20 @@ private:
 	std::ostream & m_os;
 };
 
+class FileAppender : public Appender 
+{
+    public:
+        typedef std::shared_ptr<FileAppender> ptr;
+
+        static Appender::ptr getInstance(const char * name ,const std::string & filename);
+        
+        ~FileAppender();
+    private:
+        std::ofstream m_ofs;
+    private:
+        FileAppender(const char * name ,const std::string & filename);
+        void log(LogEvent::ptr event) override;
+};
 
 //定义日志输出器
 class Logger : public std::enable_shared_from_this<Logger>{
@@ -351,60 +389,99 @@ public:
 	 * parmarter[in] content:日志内容
 	 * */
 	void emerg(const std::string & content);
-
+    /*
+     * brief:可变参数版本
+     * */
+    void emerg(const char * msg,...);
 	/*
 	 * brief:fatal级别记录
 	 * parmarter[in] content:日志内容
 	 * */
 	void fatal(const std::string & content);
-	
+    /*
+     * brief:可变参数版本
+     * */
+    void fatal(const char * msg,...);
+    	
 	/*
 	 * brief:alert级别记录
 	 * parmarter[in] content:日志内容
 	 * */
 	void alert(const std::string & content);
+    /*
+     * brief:可变参数版本
+     * */
+    void alert(const char * msg,...);
 
 	/*
 	 * brief:crit级别记录
 	 * parmarter[in] content:日志内容
 	 * */
 	void crit(const std::string & content);
+    /*
+     * brief:可变参数版本
+     * */
+    void crit(const char * msg,...);
 	
 	/*
 	 * brief:error级别记录
 	 * parmarter[in] content:日志内容
 	 * */
 	void error(const std::string & content);
+    /*
+     * brief:可变参数版本
+     * */
+    void error(const char * msg,...);
 	
 	/*
 	 * brief:warn级别记录
 	 * parmarter[in] content:日志内容
 	 * */
 	void warn(const std::string & content);
+    /*
+     * brief:可变参数版本
+     * */
+    void warn(const char * msg,...);
 
 	/*
 	 * brief:notice级别记录
 	 * parmarter[in] content:日志内容
 	 * */
 	void notice(const std::string & content);
+    /*
+     * brief:可变参数版本
+     * */
+    void notice(const char * msg,...);
 
 	/*
 	 * brief:info级别记录
 	 * parmarter[in] content:日志内容
 	 * */
 	void info(const std::string & content);
+    /*
+     * brief:可变参数版本
+     * */
+    void info(const char * msg,...);
 
 	/*
 	 * brief:debug级别记录
 	 * parmarter[in] content:日志内容
 	 * */
 	void debug(const std::string & content);
+    /*
+     * brief:可变参数版本
+     * */
+    void debug(const char * msg,...);
 
 	/*
 	 * brief:notset级别记录
 	 * parmarter[in] content:日志内容
 	 * */
 	void notset(const std::string & content);
+    /*
+     * brief:可变参数版本
+     * */
+    void notset(const char * msg,...);
 	
 	/*
 	 * brief:添加Appender
@@ -428,6 +505,8 @@ public:
 	 * brief:获取根日志输出器
 	 * */
 	static Logger::ptr getRoot();
+
+    const char * getName() const { return m_name; }
 
 private:
 	/*
@@ -459,6 +538,17 @@ private:
 	 * parmarter [out] LogEvent指针
 	 * */
     LogEvent::ptr getEvent(Silly::LogLevel::Level level,const std::string & content);
+};
+
+class LoggerManager 
+{
+    public:
+        /*
+         * brief:根据Logger name获取Logger，若存在，则直接返回，否则创建一个新的logger
+         * */
+        static Logger::ptr getLogger(const char * name);
+    private:
+        static std::unordered_map<const char * , Logger::ptr> m_loggers; 
 };
 
 } //end of namespace
