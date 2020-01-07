@@ -13,6 +13,7 @@
 #include <unordered_map>
 #include <sstream>
 #include <time.h>
+#include <vector>
 
 namespace Silly{
 
@@ -46,7 +47,7 @@ public:
 	 * brief:TimeStamp Constructor
 	 * parmarter [in] time : 设置m_time
 	 * */
-	TimeStamp(time_t time = ::time(0));
+	TimeStamp(time_t time = ::time(0),const std::string & format = "%Y-%M-%d %H:%m:%S");
 
 	/*
 	 * brief:getTime
@@ -169,6 +170,98 @@ public:
 	std::string format(const LogEvent::ptr event) override;
 };
 
+//定义自定义格式的日志格式器
+/*
+ * 参数说明
+ * %d 日期 可以进一步设置 用花括号包围 %H:小时 %M:月份 %S 秒 %Y 年份 %m 分钟 %d:天
+ * %m 消息
+ * %n 换行符
+ * %p 优先级
+ * */
+
+class FormatterItem 
+{
+    public:
+       typedef std::shared_ptr<FormatterItem> ptr;
+       virtual void format(std::stringstream & ss,const LogEvent::ptr event) = 0;
+
+       virtual ~FormatterItem() {} 
+};
+
+class ContentFormatterItem : public FormatterItem 
+{
+    public:
+        typedef std::shared_ptr<ContentFormatterItem> ptr;
+        ContentFormatterItem(const std::string & msg);
+
+        void format(std::stringstream & ss,const LogEvent::ptr event) override;
+    private:
+        const std::string m_msg;
+};
+class DateFormatterItem : public FormatterItem 
+{
+    public:
+        typedef std::shared_ptr<DateFormatterItem> ptr;
+        DateFormatterItem(const std::string & format = "%Y-%M-%d %H:%m:%S"); 
+        void format(std::stringstream & ss,const LogEvent::ptr event) override;
+    private:
+        std::string m_format;
+};
+
+
+class MessageFormatterItem : public FormatterItem
+{
+    public:
+        typedef std::shared_ptr<MessageFormatterItem> ptr;
+        void format(std::stringstream & ss,const LogEvent::ptr event) override;        
+};
+
+class LevelFormatterItem : public FormatterItem
+{
+    public:
+        typedef std::shared_ptr<LevelFormatterItem> ptr;
+        void format(std::stringstream & ss,const LogEvent::ptr event) override;        
+};
+class LineFormatterItem : public FormatterItem
+{
+    public:
+        typedef std::shared_ptr<LineFormatterItem> ptr;
+        void format(std::stringstream & ss,const LogEvent::ptr event) override;        
+};
+
+class PatternFormatter : public Formatter
+{
+    public:
+        typedef std::shared_ptr<PatternFormatter> ptr;
+        /*
+         * brief:设置格式
+         * */
+        void setConversionPattern(const std::string & pattern);
+        
+        std::string format(const LogEvent::ptr event) override;
+        static PatternFormatter::ptr getInstance();
+    private:
+         PatternFormatter() {}
+         std::vector<FormatterItem::ptr> m_items;
+    
+    private:
+         /*
+          * brief:添加输出格式中的普通字符串
+          * */
+         void addContent(std::string & str);
+
+         /*
+          * brief:获取当前pattern的日期格式
+          * */
+         std::string getDateFormat(const std::string & pattern,int begin);
+
+         /*
+          * brief:递归处理格式串
+          * */
+         void setPattern(const std::string & pattern,int & begin);
+};
+
+
 //定义日志目的地
 class Appender{
 	friend class Logger;
@@ -214,17 +307,6 @@ private:
 	virtual void log(LogEvent::ptr event) = 0;
 };
 
-//定义AppenderBuilder
-class AppenderBuilder{
-public:
-	/*
-	 * brief:设置Appender优先级
-	 * */
-	AppenderBuilder & level(LogLevel::Level level);
-	virtual ~AppenderBuilder() {}
-protected:
-	LogLevel::Level m_level;
-};
 
 /*
  * 输出到输出流的Appender
@@ -233,7 +315,7 @@ class OstreamAppender : public Appender{
 public:
 	typedef std::shared_ptr<OstreamAppender> ptr;
 	
-	static OstreamAppender::ptr getInstance();
+	static Appender::ptr getInstance(const char * name ,std::ostream & os);
 
 private:
 	/*
@@ -250,10 +332,7 @@ private:
 	std::ostream & m_os;
 };
 
-//定义OstreamAppender
-class OstreamAppender : public AppenderBuilder{
 
-};
 //定义日志输出器
 class Logger : public std::enable_shared_from_this<Logger>{
 	friend class LogEvent;
@@ -265,7 +344,7 @@ public:
 	 * parmarter[in] level:日志等级
 	 * parmarter[in] content:记录内容
 	 * */
-	void log(LogLevel::Level level,const std::string & content);
+	void log(Silly::LogLevel::Level level,const std::string & content);
 
 	/*
 	 * brief:emerg级别记录
@@ -379,9 +458,9 @@ private:
 	 * parmarter [in] content:日志事件内容
 	 * parmarter [out] LogEvent指针
 	 * */
-	LogEvent::ptr getEvent(LogLevel::Level level,const std::string & content);
+    LogEvent::ptr getEvent(Silly::LogLevel::Level level,const std::string & content);
 };
 
-}//end of namespace
+} //end of namespace
 
 #endif

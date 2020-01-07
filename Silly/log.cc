@@ -144,6 +144,10 @@ m_os(os) {
 
 }
 
+Appender::ptr OstreamAppender::getInstance(const char * name ,std::ostream & os){
+    return OstreamAppender::ptr(new OstreamAppender(name,os));
+}
+
 void OstreamAppender::log(LogEvent::ptr event){
 	//格式化器存在且输出日志级别高于Appender级别时，输出
 	if(m_formatter){
@@ -155,9 +159,9 @@ void OstreamAppender::log(LogEvent::ptr event){
 	}	
 }
 
-TimeStamp::TimeStamp(time_t time)
+TimeStamp::TimeStamp(time_t time,const std::string & format)
 	:m_time(time),
-	m_format("%Y-%m-%d %H:%M:%S"),
+	m_format(format),
 	m_info(setTimePtr())
 	{
 		
@@ -194,21 +198,111 @@ std::string BasicFormatter::format(const LogEvent::ptr event){
 	return m_ss.str();
 };
 
-AppenderBuilder::AppenderBuilder(const char * name)
-:m_name(name) {
+ContentFormatterItem::ContentFormatterItem(const std::string & msg)
+:m_msg(msg) { }
 
+void ContentFormatterItem::format(std::stringstream & ss,const LogEvent::ptr event){
+    ss << m_msg;
 }
 
-AppenderBuilder & AppenderBuilder::level(LogLevel::Level level){
-	m_level = level;
-	return *this;
+DateFormatterItem::DateFormatterItem(const std::string & format)
+:m_format(format) { }
+
+
+void DateFormatterItem::format(std::stringstream & ss,const LogEvent::ptr event){
+    TimeStamp timeStamp(::time(0),m_format);
+    ss << timeStamp.getTime();
 }
 
-OstreamAppender::OstreamAppenderBuilder(const char * name,std::ostream & os)
-	:m_name(name),
-	m_os(os) {}
+void MessageFormatterItem::format(std::stringstream & ss,const LogEvent::ptr event){
+    ss << event->getContent();
+}    
 
-OstreamAppender::OstreamAppenderBuilder & OstreamAppender::OstreamAppenderBuilder::level(LogLevel::Level level){
-	
+void LineFormatterItem::format(std::stringstream & ss,const LogEvent::ptr event){
+    ss << '\n';
+} 
+
+void LevelFormatterItem::format(std::stringstream & ss,const LogEvent::ptr event){
+    ss << LogLevel::toString(event->getLevel());
 }
+
+std::string PatternFormatter::format(const LogEvent::ptr event){
+    for(auto & item : m_items){
+        item->format(m_ss,event);
+    }       
+   return m_ss.str(); 
+}
+        
+/*
+ * 参数说明
+ * %d 日期 可以进一步设置 用花括号包围 %H:小时 %M:月份 %S 秒 %Y 年份 %m 分钟 %d:天
+ * %m 消息
+ * %n 换行符
+ * %p 优先级
+ * 基本格式 %xx %xx{} %%转义
+ * */
+void PatternFormatter::setConversionPattern(const std::string & pattern){
+    m_items.clear();
+    std::string str;
+    for(int i = 0; i < pattern.size();){
+        if(pattern[i] != '%'){
+            str += pattern[i++];
+        } else {
+            addContent(str);
+            ++i;
+            int tmp = i;
+            setPattern(pattern,i);
+            if(tmp == i){//非特殊字符
+                str += pattern[i++];
+            }
+        }
+    } 
+    addContent(str);
+}
+
+void PatternFormatter::setPattern(const std::string & pattern,int & begin){
+    switch(pattern[begin]){
+        case 'm':
+            m_items.push_back(MessageFormatterItem::ptr(new MessageFormatterItem()));
+            break;
+        case 'n':
+            m_items.push_back(LineFormatterItem::ptr(new LineFormatterItem()));
+            break;
+        case 'p':
+            m_items.push_back(LevelFormatterItem::ptr(new LevelFormatterItem()));
+            break;
+        case 'd':
+             if(begin + 1 < pattern.size() && pattern[begin + 1] == '{'){
+                 std::string timeFormat = getDateFormat(pattern,begin + 2);
+                 begin += timeFormat.size() + 3;
+                 m_items.push_back(DateFormatterItem::ptr(new DateFormatterItem(timeFormat)));
+                 return;
+             }
+             m_items.push_back(DateFormatterItem::ptr(new DateFormatterItem()));
+             break;
+        default:
+             --begin;
+             break;
+    }
+    ++begin;
+}
+void PatternFormatter::addContent(std::string & str){
+    if(str == "")
+        return;
+    m_items.push_back(ContentFormatterItem::ptr(new ContentFormatterItem(str)));
+    str="";
+}
+
+std::string PatternFormatter::getDateFormat(const std::string & pattern,int begin){
+    std::string str;
+    while(begin < pattern.size() && pattern[begin] != '}'){
+        str += pattern[begin++];
+    }
+    return str;
+}
+
+PatternFormatter::ptr PatternFormatter::getInstance(){
+    return PatternFormatter::ptr(new PatternFormatter());
+}
+
 }//end of namespace
