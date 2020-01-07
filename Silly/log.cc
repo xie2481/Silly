@@ -134,7 +134,7 @@ void Logger::notset(const std::string & content){
 void Logger::notset(const char * msg,...){
     XX(msg,notset);
 }
-
+#undef XX
 void Logger::addAppender(Appender::ptr appender){
 	/*
 	 * 如果该appender已存在，则忽略此次操作，否则加入到列表中
