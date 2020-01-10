@@ -23,7 +23,6 @@ std::unordered_map<const char * , Logger::ptr> LoggerManager::m_loggers;
 
 Logger::Logger(const char * name)
 	:m_name(name){
-	
 }
 
 std::string LogLevel::toString(LogLevel::Level level){
@@ -58,13 +57,13 @@ void Logger::log(LogLevel::Level level,const std::string & content){
 
 #define XX(msg,level) \
     va_list args;  \
-    int n = 0;     \
     va_start(args,msg);\
-    n = ::vsprintf(sprint_buf,msg,args); \
+    ::vsprintf(sprint_buf,msg,args); \
     va_end(args); \
     level(std::string(sprint_buf)) 
 
 void Logger::emerg(const std::string & content){
+    std::cout << content << std::endl;
 	log(LogLevel::EMERG,content);
 }
 
@@ -331,13 +330,13 @@ std::string PatternFormatter::format(const LogEvent::ptr event){
 void PatternFormatter::setConversionPattern(const std::string & pattern){
     m_items.clear();
     std::string str;
-    for(int i = 0; i < pattern.size();){
+    for(unsigned i = 0; i < pattern.size();){
         if(pattern[i] != '%'){
             str += pattern[i++];
         } else {
             addContent(str);
             ++i;
-            int tmp = i;
+            unsigned tmp = i;
             setPattern(pattern,i);
             if(tmp == i){//非特殊字符
                 str += pattern[i++];
@@ -347,7 +346,7 @@ void PatternFormatter::setConversionPattern(const std::string & pattern){
     addContent(str);
 }
 
-void PatternFormatter::setPattern(const std::string & pattern,int & begin){
+void PatternFormatter::setPattern(const std::string & pattern,unsigned & begin){
     switch(pattern[begin]){
         case 'm':
             m_items.push_back(MessageFormatterItem::ptr(new MessageFormatterItem()));
@@ -387,7 +386,7 @@ void PatternFormatter::addContent(std::string & str){
     str="";
 }
 
-std::string PatternFormatter::getDateFormat(const std::string & pattern,int begin){
+std::string PatternFormatter::getDateFormat(const std::string & pattern,unsigned begin){
     std::string str;
     while(begin < pattern.size() && pattern[begin] != '}'){
         str += pattern[begin++];

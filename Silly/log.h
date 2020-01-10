@@ -16,7 +16,43 @@
 #include <vector>
 #include <fstream>
 #include <stdarg.h>
+#include <string.h>
+ 
+#define SILLY_LOG_PREFIX \
+    std::string(__FILE__) + std::string(" ")  \
+    + std::to_string(__LINE__) + std::string(" ") \
+    + std::string(__func__) + " " 
+#define SILLY_LOGGER_NAME "test"
 
+#define SILLY_LOG_EMERG(msg,args...) \
+    LoggerManager::getLogger(SILLY_LOGGER_NAME)->emerg((SILLY_LOG_PREFIX msg).c_str(),##args)
+   
+#define SILLY_LOG_FATAL(msg,args...) \
+    LoggerManager::getLogger(SILLY_LOGGER_NAME)->fatal((SILLY_LOG_PREFIX msg).c_str(),##args)
+
+#define SILLY_LOG_ALERT(msg,args...) \
+    LoggerManager::getLogger(SILLY_LOGGER_NAME)->alert((SILLY_LOG_PREFIX msg).c_str(),##args)
+
+#define SILLY_LOG_CRIT(msg,args...) \
+    LoggerManager::getLogger(SILLY_LOGGER_NAME)->crit((SILLY_LOG_PREFIX msg).c_str(),##args)
+
+#define SILLY_LOG_ERROR(msg,args...) \
+    LoggerManager::getLogger(SILLY_LOGGER_NAME)->error((SILLY_LOG_PREFIX msg).c_str(),##args)
+
+#define SILLY_LOG_WARN(msg,args...) \
+    LoggerManager::getLogger(SILLY_LOGGER_NAME)->warn((SILLY_LOG_PREFIX msg).c_str(),##args)
+
+#define SILLY_LOG_NOTICE(msg,args...) \
+    LoggerManager::getLogger(SILLY_LOGGER_NAME)->notice((SILLY_LOG_PREFIX msg).c_str(),##args)
+
+#define SILLY_LOG_INFO(msg,args...) \
+    LoggerManager::getLogger(SILLY_LOGGER_NAME)->info((SILLY_LOG_PREFIX msg).c_str(),##args)
+
+#define SILLY_LOG_DEBUG(msg,args...) \
+    LoggerManager::getLogger(SILLY_LOGGER_NAME)->debug((SILLY_LOG_PREFIX msg).c_str(),##args)
+
+#define SILLY_LOG_NOTSET(msg,args...) \
+    LoggerManager::getLogger(SILLY_LOGGER_NAME)->notset((SILLY_LOG_PREFIX msg).c_str(),##args)
 
 namespace Silly{
 
@@ -278,12 +314,12 @@ class PatternFormatter : public Formatter
          /*
           * brief:获取当前pattern的日期格式
           * */
-         std::string getDateFormat(const std::string & pattern,int begin);
+         std::string getDateFormat(const std::string & pattern,unsigned begin);
 
          /*
           * brief:递归处理格式串,添加新格式时，需要在函数中注册
           * */
-         void setPattern(const std::string & pattern,int & begin);
+         void setPattern(const std::string & pattern,unsigned & begin);
 };
 
 //定义日志目的地
