@@ -22,7 +22,7 @@
     std::string(__FILE__) + std::string(" ")  \
     + std::to_string(__LINE__) + std::string(" ") \
     + std::string(__func__) + " " 
-#define SILLY_LOGGER_NAME "test"
+#define SILLY_LOGGER_NAME ""
 
 #define SILLY_LOG_EMERG(msg,args...) \
     LoggerManager::getLogger(SILLY_LOGGER_NAME)->emerg((SILLY_LOG_PREFIX msg).c_str(),##args)
@@ -86,7 +86,7 @@ public:
 	 * brief:TimeStamp Constructor
 	 * parmarter [in] time : 设置m_time
 	 * */
-	TimeStamp(time_t time = ::time(0),const std::string & format = "%Y-%M-%d %H:%m:%S");
+	TimeStamp(time_t time = ::time(0),const std::string & format = "%Y-%m-%d %H:%M:%S");
 
 	/*
 	 * brief:getTime
@@ -536,7 +536,11 @@ public:
 	 * parmarter[in] name : 新的日志输出器的名字
 	 * */
 	Logger::ptr getInstance(const char * name);
-
+   
+   /*
+    * brief:提供一个默认的流式日志器
+    * */ 
+    Logger::ptr getDefaultLogger();
 	/*
 	 * brief:获取根日志输出器
 	 * */

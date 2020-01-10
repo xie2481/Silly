@@ -63,7 +63,6 @@ void Logger::log(LogLevel::Level level,const std::string & content){
     level(std::string(sprint_buf)) 
 
 void Logger::emerg(const std::string & content){
-    std::cout << content << std::endl;
 	log(LogLevel::EMERG,content);
 }
 
@@ -168,12 +167,24 @@ Logger::ptr Logger::getInstance(const char * name){
 		return nullptr;
 }
 
+Logger::ptr Logger::getDefaultLogger(){
+    auto logger = Logger::getRoot()->getInstance("");
+    auto ostreamAppender = OstreamAppender::getInstance("",std::cout); 
+    ostreamAppender->setFormatter(BasicFormatter::ptr(new BasicFormatter()));
+    logger->addAppender(ostreamAppender);
+    return logger;
+}
+
 Logger::ptr LoggerManager::getLogger(const char * name){
     auto it = m_loggers.find(name);
     if(it != m_loggers.end()){//当前logger存在
         return it->second;
     } else {//创造一个新的
-        m_loggers.insert(std::make_pair(name,Logger::getRoot()->getInstance(name)));
+        if(!::strcmp(name,"")){
+            m_loggers.insert(std::make_pair(name,Logger::getRoot()->getDefaultLogger()));
+        } else {
+            m_loggers.insert(std::make_pair(name,Logger::getRoot()->getInstance(name)));
+        }
         return m_loggers[name];
     }
 }
