@@ -7,9 +7,11 @@
 
 #include "log.h"
 #include "util.h"
+#include "config.h"
 #include <string>
 #include <ostream>
 #include <iostream>
+#include <algorithm>
 #include <string.h>
 #define MAXBUFFER 1024
 
@@ -19,7 +21,7 @@ namespace Silly{
 static char sprint_buf[MAXBUFFER] = {0};
 Logger::ptr Logger::m_root = Logger::ptr(new Logger("root"));
 
-std::unordered_map<const char * , Logger::ptr> LoggerManager::m_loggers; 
+std::unordered_map<std::string , Logger::ptr> LoggerManager::m_loggers; 
 
 Logger::Logger(const char * name)
 	:m_name(name){
@@ -45,6 +47,24 @@ std::string LogLevel::toString(LogLevel::Level level){
 		default:
 			return "UNKNOWN";
 	}
+}
+
+LogLevel::Level LogLevel::fromString(std::string & level){
+    std::transform(level.begin(),level.end(),level.begin(),::toupper);
+#define XX(lev) \
+    if(level == #lev) \
+        return LogLevel::lev
+    
+    XX(ALERT);
+    XX(CRIT);
+    XX(ERROR);
+    XX(WARN);
+    XX(NOTICE);
+    XX(INFO);
+    XX(DEBUG);
+    XX(NOTSET);
+#undef XX
+    return LogLevel::INFO;
 }
 
 void Logger::log(LogLevel::Level level,const std::string & content){
@@ -189,11 +209,127 @@ Logger::ptr LoggerManager::getLogger(const char * name){
     }
 }
 
+/*
+ * logs:
+ *   - name: root
+ *     appenders:
+ *       - type: FileAppender
+ *         file: /logs/root.txt
+ *         level: info
+ *         formatter: PatternFormatter
+ *         pattern: xxxxxx
+ *       - type: OstreamAppender 
+ * */
+void LoggerManager::loadFromYaml(const std::string & file){
+    Config::loadFromYaml(file);
+    //搜索logs的配置项
+    int count = 0;
+    while(1){
+        auto var = Config::lookup<YAML::Node>("logs" + std::to_string(count++));
+        if(!var){//搜索完毕
+            break;
+        }
+        YAML::Node node = var->getVal();
+        auto logger = createLogger(node);
+        if(!logger)
+            break;
+        auto appenders = createAppenders(node);
+        for(auto & appender : appenders){
+            logger->addAppender(appender);
+        }
+    }
+}
+
+Logger::ptr LoggerManager::createLogger(YAML::Node & node){
+    for(auto it = node.begin();
+        it != node.end(); ++it){
+        if(it->first.Scalar() == "name"){
+            return getLogger(it->second.Scalar().c_str());
+        }
+    }    
+    return nullptr;
+}
+
+/*
+ * type
+ * file
+ * level
+ * formatter
+ * pattern
+ * */
+Appender::ptr LoggerManager::getAppenderByNode(const YAML::Node & node){
+    Appender::ptr appender = nullptr;
+    std::string type,file,level,format,pattern;
+    for(auto it = node.begin();it != node.end();++it){
+        if(it->first.Scalar() == "type")
+           type = it->second.Scalar();
+        if(it->first.Scalar() == "file")
+           file = it->second.Scalar();
+        if(it->first.Scalar() == "level")
+           level = it->second.Scalar();
+        if(it->first.Scalar() == "formatter")
+           format = it->second.Scalar();
+        if(it->first.Scalar() == "pattern")
+           pattern = it->second.Scalar(); 
+    }
+    if(type == "OstreamAppender"){
+        appender = OstreamAppender::getInstance("OstreamAppender",std::cout); 
+    }
+    if(type == "FileAppender"){
+        appender = FileAppender::getInstance(file.c_str(),file); 
+    }
+    setAppener(appender,level,format,pattern);
+    return appender;
+}
+
+void LoggerManager::setAppener(Appender::ptr appender,std::string & level,const std::string & format,
+                             const std::string & pattern){
+    if(!level.empty()){
+        appender->setLevel(LogLevel::fromString(level));
+    }
+    if(format.empty() || format == "BasicFormatter"){
+        appender->setFormatter(BasicFormatter::ptr(new BasicFormatter()));
+        return;
+    }
+    if(format == "PatternFormatter"){
+        if(pattern.empty()){
+            appender->setFormatter(PatternFormatter::getInstance());
+        } else {
+            PatternFormatter::ptr formatPtr = PatternFormatter::getInstance();
+            formatPtr->setConversionPattern(pattern);
+            appender->setFormatter(formatPtr);            
+        }
+    }
+}
+std::vector<Appender::ptr> LoggerManager::createAppenders(YAML::Node & node){
+    std::vector<Appender::ptr> appenders;
+    for(auto it = node.begin();
+            it != node.end(); ++it){
+        if(it->first.Scalar() == "appenders"){
+            for(size_t i = 0; i < it->second.size();++i){
+                appenders.push_back(getAppenderByNode(it->second[i]));
+            }
+        }
+    }
+    return appenders;
+}
+
 LogEvent::ptr Logger::getEvent(LogLevel::Level level,const std::string & content){
 	LogEvent::ptr event = LogEvent::ptr(new LogEvent());
 	event->setLevel(level);
 	event->setContent(content);
 	return event;
+}
+
+LoggerWrap::LoggerWrap(const std::string & loggerName,LogLevel::Level level,const std::string & filename,
+                const std::string & func,int line)
+:m_loggerName(loggerName),
+ m_level(level){
+     m_ss << filename << " " << func << " " << line << " " << Silly::getThreadID() << " ";   
+}
+
+LoggerWrap::~LoggerWrap(){
+    LoggerManager::getLogger(m_loggerName.c_str())->log(m_level,m_ss.str());
 }
 
 Appender::Appender(const char * name)
@@ -279,6 +415,7 @@ struct tm * TimeStamp::setTimePtr(){
 
 
 std::string BasicFormatter::format(const LogEvent::ptr event){
+    m_ss.str("");
 	m_ss << "[" + LogLevel::toString(event->getLevel())
 			  << "] " <<  event->getTimeStamp().getTime()
 			  << " " << event->getContent();
@@ -322,6 +459,7 @@ void ThreadFormatterItem::format(std::stringstream & ss,const LogEvent::ptr even
 }
 
 std::string PatternFormatter::format(const LogEvent::ptr event){
+    m_ss.str("");
     for(auto & item : m_items){
         item->format(m_ss,event);
     }       

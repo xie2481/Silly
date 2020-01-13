@@ -8,6 +8,7 @@
 #ifndef _LOG_H__
 #define _LOG_H__
 
+#include "config.h"
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -24,35 +25,39 @@
     + std::string(__func__) + " " 
 #define SILLY_LOGGER_NAME ""
 
-#define SILLY_LOG_EMERG(msg,args...) \
-    LoggerManager::getLogger(SILLY_LOGGER_NAME)->emerg((SILLY_LOG_PREFIX msg).c_str(),##args)
-   
-#define SILLY_LOG_FATAL(msg,args...) \
-    LoggerManager::getLogger(SILLY_LOGGER_NAME)->fatal((SILLY_LOG_PREFIX msg).c_str(),##args)
+#define SILLY_LOG_LEVEL(name,level) \
+    Silly::LoggerWrap(name,level,__FILE__,__func__,__LINE__).getSS()
+  
+#define SILLY_LOG_EMERG(name) \
+    SILLY_LOG_LEVEL(name,LogLevel::EMERG)
 
-#define SILLY_LOG_ALERT(msg,args...) \
-    LoggerManager::getLogger(SILLY_LOGGER_NAME)->alert((SILLY_LOG_PREFIX msg).c_str(),##args)
+#define SILLY_LOG_FATAL(name) \
+    SILLY_LOG_LEVEL(name,LogLevel::FATAL)
 
-#define SILLY_LOG_CRIT(msg,args...) \
-    LoggerManager::getLogger(SILLY_LOGGER_NAME)->crit((SILLY_LOG_PREFIX msg).c_str(),##args)
+#define SILLY_LOG_ALERT(name) \
+    SILLY_LOG_LEVEL(name,LogLevel::ALERT)
 
-#define SILLY_LOG_ERROR(msg,args...) \
-    LoggerManager::getLogger(SILLY_LOGGER_NAME)->error((SILLY_LOG_PREFIX msg).c_str(),##args)
+#define SILLY_LOG_CRIT(name) \
+    SILLY_LOG_LEVEL(name,LogLevel::CRIT)
 
-#define SILLY_LOG_WARN(msg,args...) \
-    LoggerManager::getLogger(SILLY_LOGGER_NAME)->warn((SILLY_LOG_PREFIX msg).c_str(),##args)
+#define SILLY_LOG_ERROR(name) \
+    SILLY_LOG_LEVEL(name,LogLevel::ERROR)
 
-#define SILLY_LOG_NOTICE(msg,args...) \
-    LoggerManager::getLogger(SILLY_LOGGER_NAME)->notice((SILLY_LOG_PREFIX msg).c_str(),##args)
+#define SILLY_LOG_WARN(name) \
+    SILLY_LOG_LEVEL(name,LogLevel::WARN)
 
-#define SILLY_LOG_INFO(msg,args...) \
-    LoggerManager::getLogger(SILLY_LOGGER_NAME)->info((SILLY_LOG_PREFIX msg).c_str(),##args)
+#define SILLY_LOG_NOTICE(name) \
+    SILLY_LOG_LEVEL(name,LogLevel::NOTICE)
 
-#define SILLY_LOG_DEBUG(msg,args...) \
-    LoggerManager::getLogger(SILLY_LOGGER_NAME)->debug((SILLY_LOG_PREFIX msg).c_str(),##args)
+#define SILLY_LOG_INFO(name) \
+    SILLY_LOG_LEVEL(name,LogLevel::INFO)
 
-#define SILLY_LOG_NOTSET(msg,args...) \
-    LoggerManager::getLogger(SILLY_LOGGER_NAME)->notset((SILLY_LOG_PREFIX msg).c_str(),##args)
+#define SILLY_LOG_DEBUG(name) \
+    SILLY_LOG_LEVEL(name,LogLevel::DEBUG)
+
+#define SILLY_LOG_NOTSET(name) \
+    SILLY_LOG_LEVEL(name,LogLevel::NOTSET)
+
 
 namespace Silly{
 
@@ -77,6 +82,11 @@ struct LogLevel{
   * brief:输出优先级的字符串
   * */
  static std::string toString(LogLevel::Level level);
+
+ /*
+  * brief:根据字符串形式返回相应的level
+  * */
+ static LogLevel::Level fromString(std::string & level);
 };
 
 //格式化时间
@@ -580,6 +590,22 @@ private:
     LogEvent::ptr getEvent(Silly::LogLevel::Level level,const std::string & content);
 };
 
+/*
+ * 对logger进行包装，实现流式读取日志内容 
+ * */
+class LoggerWrap
+{
+    public:
+        LoggerWrap(const std::string & loggerName,LogLevel::Level level,const std::string & filename,
+                const std::string & func,int line);
+        std::stringstream & getSS() { return m_ss; }
+        ~LoggerWrap();
+    private:
+        std::string m_loggerName;
+        LogLevel::Level m_level;
+        std::stringstream m_ss;
+};
+
 class LoggerManager 
 {
     public:
@@ -587,8 +613,26 @@ class LoggerManager
          * brief:根据Logger name获取Logger，若存在，则直接返回，否则创建一个新的logger
          * */
         static Logger::ptr getLogger(const char * name);
+
+        /*
+         * brief:读取日志配置文件
+         * */
+        static void loadFromYaml(const std::string & file);
     private:
-        static std::unordered_map<const char * , Logger::ptr> m_loggers; 
+        static std::unordered_map<std::string , Logger::ptr> m_loggers; 
+    
+    private:
+        /*
+         * brief:根据YAML文件获取日志器
+         * */
+        static Logger::ptr createLogger(YAML::Node & node);
+        static std::vector<Appender::ptr> createAppenders(YAML::Node & node);
+        /*
+         * brief:获取单个appender
+         * */
+        static Appender::ptr getAppenderByNode(const YAML::Node & node);
+        static void setAppener(Appender::ptr appender,std::string & level,const std::string & format,
+                             const std::string & pattern);
 };
 
 } //end of namespace

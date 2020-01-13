@@ -1,0 +1,15 @@
+logs:
+  - name: root
+    appenders:
+      - type: FileAppender
+        file: /home/xie2481/Silly/bin/log/root.txt
+        level: info
+        formatter: PatternFormatter
+        pattern: m
+      - type: OstreamAppender
+  - name: system
+    appenders:
+      - type: FileAppender
+        file: system.txt
+        level: info
+      - type: OstreamAppender

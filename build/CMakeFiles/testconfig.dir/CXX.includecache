@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/xie2481/Silly/Silly/config.h
+memory
+-
+string
+-
+unordered_map
+-
+yaml-cpp/yaml.h
+-
+list
+-
+
+/home/xie2481/Silly/tests/test_config.cc
+../Silly/config.h
+/home/xie2481/Silly/Silly/config.h
+yaml-cpp/yaml.h
+-
+iostream
+-
+

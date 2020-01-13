@@ -1,0 +1,4 @@
+/home/xie2481/Silly/build/CMakeFiles/rebuild_cache.dir
+/home/xie2481/Silly/build/CMakeFiles/edit_cache.dir
+/home/xie2481/Silly/build/CMakeFiles/Silly.dir
+/home/xie2481/Silly/build/CMakeFiles/testconfig.dir

@@ -1,0 +1,8 @@
+[INFO] 2020-01-13 03:00:07 createtest
+[INFO] 2020-01-13 03:00:07 createtest
+[INFO] 2020-01-13 03:00:07 createtest
+[EMERG] 2020-01-13 05:29:09 /home/xie2481/Silly/tests/test_config.cc main 41 10038create test1
+[EMERG] 2020-01-13 05:29:53 /home/xie2481/Silly/tests/test_config.cc main 41 10102 create test1
+[EMERG] 2020-01-13 05:29:53 /home/xie2481/Silly/tests/test_config.cc main 42 10102 create test1
+m
+m
