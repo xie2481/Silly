@@ -220,35 +220,35 @@ Logger::ptr LoggerManager::getLogger(const char * name){
  *         pattern: xxxxxx
  *       - type: OstreamAppender 
  * */
-void LoggerManager::loadFromYaml(const std::string & file){
-    Config::loadFromYaml(file);
-    //搜索logs的配置项
-    int count = 0;
-    while(1){
-        auto var = Config::lookup<YAML::Node>("logs" + std::to_string(count++));
-        if(!var){//搜索完毕
-            break;
-        }
-        YAML::Node node = var->getVal();
-        auto logger = createLogger(node);
-        if(!logger)
-            break;
-        auto appenders = createAppenders(node);
-        for(auto & appender : appenders){
-            logger->addAppender(appender);
-        }
-    }
-}
+//void LoggerManager::loadFromYaml(const std::string & file){
+//    Config::loadFromYaml(file);
+//    //搜索logs的配置项
+//    int count = 0;
+//    while(1){
+//        auto var = Config::lookup<YAML::Node>("logs" + std::to_string(count++));
+//        if(!var){//搜索完毕
+//            break;
+//        }
+//        YAML::Node node = var->getVal();
+//        auto logger = createLogger(node);
+//        if(!logger)
+//            break;
+//        auto appenders = createAppenders(node);
+//        for(auto & appender : appenders){
+//            logger->addAppender(appender);
+//        }
+//    }
+//}
 
-Logger::ptr LoggerManager::createLogger(YAML::Node & node){
-    for(auto it = node.begin();
-        it != node.end(); ++it){
-        if(it->first.Scalar() == "name"){
-            return getLogger(it->second.Scalar().c_str());
-        }
-    }    
-    return nullptr;
-}
+//Logger::ptr LoggerManager::createLogger(YAML::Node & node){
+//    for(auto it = node.begin();
+//        it != node.end(); ++it){
+//        if(it->first.Scalar() == "name"){
+//            return getLogger(it->second.Scalar().c_str());
+//        }
+//    }    
+//    return nullptr;
+//}
 
 /*
  * type
@@ -257,62 +257,62 @@ Logger::ptr LoggerManager::createLogger(YAML::Node & node){
  * formatter
  * pattern
  * */
-Appender::ptr LoggerManager::getAppenderByNode(const YAML::Node & node){
-    Appender::ptr appender = nullptr;
-    std::string type,file,level,format,pattern;
-    for(auto it = node.begin();it != node.end();++it){
-        if(it->first.Scalar() == "type")
-           type = it->second.Scalar();
-        if(it->first.Scalar() == "file")
-           file = it->second.Scalar();
-        if(it->first.Scalar() == "level")
-           level = it->second.Scalar();
-        if(it->first.Scalar() == "formatter")
-           format = it->second.Scalar();
-        if(it->first.Scalar() == "pattern")
-           pattern = it->second.Scalar(); 
-    }
-    if(type == "OstreamAppender"){
-        appender = OstreamAppender::getInstance("OstreamAppender",std::cout); 
-    }
-    if(type == "FileAppender"){
-        appender = FileAppender::getInstance(file.c_str(),file); 
-    }
-    setAppener(appender,level,format,pattern);
-    return appender;
-}
+//Appender::ptr LoggerManager::getAppenderByNode(const YAML::Node & node){
+//    Appender::ptr appender = nullptr;
+//    std::string type,file,level,format,pattern;
+//    for(auto it = node.begin();it != node.end();++it){
+//        if(it->first.Scalar() == "type")
+//           type = it->second.Scalar();
+//        if(it->first.Scalar() == "file")
+//           file = it->second.Scalar();
+//        if(it->first.Scalar() == "level")
+//           level = it->second.Scalar();
+//        if(it->first.Scalar() == "formatter")
+//           format = it->second.Scalar();
+//        if(it->first.Scalar() == "pattern")
+//           pattern = it->second.Scalar(); 
+//    }
+//    if(type == "OstreamAppender"){
+//        appender = OstreamAppender::getInstance("OstreamAppender",std::cout); 
+//    }
+//    if(type == "FileAppender"){
+//        appender = FileAppender::getInstance(file.c_str(),file); 
+//    }
+//    setAppener(appender,level,format,pattern);
+//    return appender;
+//}
 
-void LoggerManager::setAppener(Appender::ptr appender,std::string & level,const std::string & format,
-                             const std::string & pattern){
-    if(!level.empty()){
-        appender->setLevel(LogLevel::fromString(level));
-    }
-    if(format.empty() || format == "BasicFormatter"){
-        appender->setFormatter(BasicFormatter::ptr(new BasicFormatter()));
-        return;
-    }
-    if(format == "PatternFormatter"){
-        if(pattern.empty()){
-            appender->setFormatter(PatternFormatter::getInstance());
-        } else {
-            PatternFormatter::ptr formatPtr = PatternFormatter::getInstance();
-            formatPtr->setConversionPattern(pattern);
-            appender->setFormatter(formatPtr);            
-        }
-    }
-}
-std::vector<Appender::ptr> LoggerManager::createAppenders(YAML::Node & node){
-    std::vector<Appender::ptr> appenders;
-    for(auto it = node.begin();
-            it != node.end(); ++it){
-        if(it->first.Scalar() == "appenders"){
-            for(size_t i = 0; i < it->second.size();++i){
-                appenders.push_back(getAppenderByNode(it->second[i]));
-            }
-        }
-    }
-    return appenders;
-}
+//void LoggerManager::setAppener(Appender::ptr appender,std::string & level,const std::string & format,
+//                             const std::string & pattern){
+//    if(!level.empty()){
+//        appender->setLevel(LogLevel::fromString(level));
+//    }
+//    if(format.empty() || format == "BasicFormatter"){
+//        appender->setFormatter(BasicFormatter::ptr(new BasicFormatter()));
+//        return;
+//    }
+//    if(format == "PatternFormatter"){
+//        if(pattern.empty()){
+//            appender->setFormatter(PatternFormatter::getInstance());
+//        } else {
+//            PatternFormatter::ptr formatPtr = PatternFormatter::getInstance();
+//            formatPtr->setConversionPattern(pattern);
+//            appender->setFormatter(formatPtr);            
+//        }
+//    }
+//}
+//std::vector<Appender::ptr> LoggerManager::createAppenders(YAML::Node & node){
+//    std::vector<Appender::ptr> appenders;
+//    for(auto it = node.begin();
+//            it != node.end(); ++it){
+//        if(it->first.Scalar() == "appenders"){
+//            for(size_t i = 0; i < it->second.size();++i){
+//                appenders.push_back(getAppenderByNode(it->second[i]));
+//            }
+//        }
+//    }
+//    return appenders;
+//}
 
 LogEvent::ptr Logger::getEvent(LogLevel::Level level,const std::string & content){
 	LogEvent::ptr event = LogEvent::ptr(new LogEvent());

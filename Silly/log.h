@@ -8,7 +8,7 @@
 #ifndef _LOG_H__
 #define _LOG_H__
 
-#include "config.h"
+#include <yaml-cpp/yaml.h>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -23,7 +23,6 @@
     std::string(__FILE__) + std::string(" ")  \
     + std::to_string(__LINE__) + std::string(" ") \
     + std::string(__func__) + " " 
-#define SILLY_LOGGER_NAME ""
 
 #define SILLY_LOG_LEVEL(name,level) \
     Silly::LoggerWrap(name,level,__FILE__,__func__,__LINE__).getSS()
@@ -617,7 +616,7 @@ class LoggerManager
         /*
          * brief:读取日志配置文件
          * */
-        static void loadFromYaml(const std::string & file);
+        //static void loadFromYaml(const std::string & file);
     private:
         static std::unordered_map<std::string , Logger::ptr> m_loggers; 
     
@@ -625,14 +624,14 @@ class LoggerManager
         /*
          * brief:根据YAML文件获取日志器
          * */
-        static Logger::ptr createLogger(YAML::Node & node);
-        static std::vector<Appender::ptr> createAppenders(YAML::Node & node);
+        //static Logger::ptr createLogger(YAML::Node & node);
+        //static std::vector<Appender::ptr> createAppenders(YAML::Node & node);
         /*
          * brief:获取单个appender
          * */
-        static Appender::ptr getAppenderByNode(const YAML::Node & node);
-        static void setAppener(Appender::ptr appender,std::string & level,const std::string & format,
-                             const std::string & pattern);
+        //static Appender::ptr getAppenderByNode(const YAML::Node & node);
+        //static void setAppener(Appender::ptr appender,std::string & level,const std::string & format,
+                                 //const std::string & pattern);
 };
 
 } //end of namespace
