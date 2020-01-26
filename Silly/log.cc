@@ -8,11 +8,13 @@
 #include "log.h"
 #include "util.h"
 #include "config.h"
+#include "config.h"
 #include <string>
 #include <ostream>
 #include <iostream>
 #include <algorithm>
 #include <string.h>
+#include <yaml-cpp/yaml.h>
 #define MAXBUFFER 1024
 
 namespace Silly{
@@ -210,109 +212,207 @@ Logger::ptr LoggerManager::getLogger(const char * name){
 }
 
 /*
- * logs:
- *   - name: root
- *     appenders:
- *       - type: FileAppender
- *         file: /logs/root.txt
- *         level: info
- *         formatter: PatternFormatter
- *         pattern: xxxxxx
- *       - type: OstreamAppender 
+ * 对appender的定义
  * */
-//void LoggerManager::loadFromYaml(const std::string & file){
-//    Config::loadFromYaml(file);
-//    //搜索logs的配置项
-//    int count = 0;
-//    while(1){
-//        auto var = Config::lookup<YAML::Node>("logs" + std::to_string(count++));
-//        if(!var){//搜索完毕
-//            break;
-//        }
-//        YAML::Node node = var->getVal();
-//        auto logger = createLogger(node);
-//        if(!logger)
-//            break;
-//        auto appenders = createAppenders(node);
-//        for(auto & appender : appenders){
-//            logger->addAppender(appender);
-//        }
-//    }
-//}
+struct AppenderDefine{
+    int type;
+    std::string file;
+    LogLevel::Level level;
+    int formatter_type;
+    std::string pattern;
+    bool operator==(const AppenderDefine & oth) const{
+        return type == oth.type && file == oth.file
+            && level == oth.level && formatter_type == oth.formatter_type
+            && pattern == oth.pattern;
+    }
 
-//Logger::ptr LoggerManager::createLogger(YAML::Node & node){
-//    for(auto it = node.begin();
-//        it != node.end(); ++it){
-//        if(it->first.Scalar() == "name"){
-//            return getLogger(it->second.Scalar().c_str());
-//        }
-//    }    
-//    return nullptr;
-//}
+    std::string toString(){
+        std::stringstream ss;
+        ss << "type = " << type << " file = " << file
+            << " level = " << LogLevel::toString(level)
+            << " fomratter_type = " << formatter_type
+            << " pattern = " << pattern;
+        return ss.str();
+
+    }
+};
 
 /*
- * type
- * file
- * level
- * formatter
- * pattern
+ * 对log的定义
  * */
-//Appender::ptr LoggerManager::getAppenderByNode(const YAML::Node & node){
-//    Appender::ptr appender = nullptr;
-//    std::string type,file,level,format,pattern;
-//    for(auto it = node.begin();it != node.end();++it){
-//        if(it->first.Scalar() == "type")
-//           type = it->second.Scalar();
-//        if(it->first.Scalar() == "file")
-//           file = it->second.Scalar();
-//        if(it->first.Scalar() == "level")
-//           level = it->second.Scalar();
-//        if(it->first.Scalar() == "formatter")
-//           format = it->second.Scalar();
-//        if(it->first.Scalar() == "pattern")
-//           pattern = it->second.Scalar(); 
-//    }
-//    if(type == "OstreamAppender"){
-//        appender = OstreamAppender::getInstance("OstreamAppender",std::cout); 
-//    }
-//    if(type == "FileAppender"){
-//        appender = FileAppender::getInstance(file.c_str(),file); 
-//    }
-//    setAppener(appender,level,format,pattern);
-//    return appender;
-//}
+struct LogDefine{
+    std::string name;
+    std::vector<AppenderDefine> appenders;
+    bool operator==(const LogDefine & oth) const{
+        return name == oth.name && 
+            appenders == oth.appenders;
+    }
+};
 
-//void LoggerManager::setAppener(Appender::ptr appender,std::string & level,const std::string & format,
-//                             const std::string & pattern){
-//    if(!level.empty()){
-//        appender->setLevel(LogLevel::fromString(level));
-//    }
-//    if(format.empty() || format == "BasicFormatter"){
-//        appender->setFormatter(BasicFormatter::ptr(new BasicFormatter()));
-//        return;
-//    }
-//    if(format == "PatternFormatter"){
-//        if(pattern.empty()){
-//            appender->setFormatter(PatternFormatter::getInstance());
-//        } else {
-//            PatternFormatter::ptr formatPtr = PatternFormatter::getInstance();
-//            formatPtr->setConversionPattern(pattern);
-//            appender->setFormatter(formatPtr);            
-//        }
-//    }
-//}
-//std::vector<Appender::ptr> LoggerManager::createAppenders(YAML::Node & node){
-//    std::vector<Appender::ptr> appenders;
-//    for(auto it = node.begin();
-//            it != node.end(); ++it){
-//        if(it->first.Scalar() == "appenders"){
-//            for(size_t i = 0; i < it->second.size();++i){
-//                appenders.push_back(getAppenderByNode(it->second[i]));
-//            }
-//        }
-//    }
-//    return appenders;
-//}
+/*
+ * Appender转换类
+ * */
+template<>
+class LexicalCast<AppenderDefine,std::string>
+{
+    public:
+        std::string operator()(const AppenderDefine & val){
+            YAML::Node node(YAML::NodeType::Map);
+            switch(val.type){
+            case 0:
+                node["type"] = "OstreamAppender";
+                break;
+            case 1:
+                node["type"] = "FileAppender";
+                break;
+            default:
+                node["type"] = "OstreamAppender";
+                break;
+            }
+            node["file"] = val.file;
+            node["level"] = LogLevel::toString(val.level);
+            switch(val.formatter_type){
+                case 0:
+                    node["formatter"] = "BasicFormatter";
+                    break;
+                case 1:
+                    node["formatter"] = "PatternFormatter";
+                    break;
+                default:
+                    node["formatter"] = "BasicFormatter";
+                    break;
+            }
+            node["pattern"] = val.pattern;
+            std::stringstream ss;
+            ss << node;
+            return ss.str();
+        }
+};
+
+template<>
+class LexicalCast<std::string,AppenderDefine>
+{
+    public:
+        AppenderDefine operator()(const std::string & val){
+            YAML::Node node = YAML::Load(val);
+            AppenderDefine ad;
+            if(node["type"].Scalar() == "FileAppender"){
+                ad.type = 1;
+            } else {
+                ad.type = 0;
+            }
+            ad.file = node["file"].Scalar();
+            std::string level = node["level"].Scalar();
+            ad.level = LogLevel::fromString(level);
+            if(node["formatter"].Scalar() == "PatternFormatter"){
+                ad.formatter_type = 1;
+            } else {
+                ad.formatter_type = 0;
+            }
+            ad.pattern = node["pattern"].Scalar();
+            return ad;
+        }
+};
+
+/*
+ * LogDefine的转换
+ * */
+template<>
+class LexicalCast<LogDefine,std::string>
+{
+    public:
+        std::string operator()(const LogDefine & val){
+            YAML::Node node(YAML::NodeType::Map);
+            node["name"] = val.name;
+            node["appenders"] = LexicalCast<std::vector<AppenderDefine>,std::string>()(val.appenders);
+            std::stringstream ss;
+            ss << node;
+            return ss.str();
+        }
+};
+
+template<>
+class LexicalCast<std::string,LogDefine>
+{
+    public:
+        LogDefine operator()(const std::string val){
+            LogDefine ld;
+            YAML::Node node = YAML::Load(val);
+            ld.name = node["name"].Scalar(); 
+            std::stringstream ss;
+            ss << node["appenders"];
+            ld.appenders = LexicalCast<std::string,std::vector<AppenderDefine>>()(ss.str());
+            return ld;
+        }
+};
+
+void LoggerManager::loadFromYaml(const std::string & file){
+    logInit();
+    auto ldPtr = Config::lookup<std::vector<LogDefine>>("logs",std::vector<LogDefine>());
+    Config::loadFromYaml(file);
+    auto logDefines = ldPtr->getVal();
+    for(auto & e : logDefines){
+        loadLog(e);
+    }
+}
+
+void LoggerManager::logInit(){
+    std::vector<LogDefine> lds;
+    LogDefine system , root;
+    root.name = "root";
+    system.name = "system";
+    /*
+     * 定义root AppenderDefine
+     * */
+    std::vector<AppenderDefine> ads;
+    AppenderDefine fileAppender,ostreamAppender;
+    ostreamAppender.type = 0;
+    fileAppender.type = 1;
+    ostreamAppender.level = fileAppender.level = LogLevel::INFO;
+    ostreamAppender.formatter_type = fileAppender.formatter_type = 0;
+    fileAppender.file = "/home/xie2481/Silly/bin/log/root.txt";
+    ads.push_back(fileAppender);
+    ads.push_back(ostreamAppender);
+    root.appenders = ads;
+
+    /*
+     * 定义system AppenderDefine
+     * */
+    ads.clear();
+    fileAppender.file = "/home/xie2481/Silly/bin/log/system.txt";
+    ads.push_back(fileAppender);
+    ads.push_back(ostreamAppender);
+    system.appenders = ads;
+
+    lds.push_back(system);
+    lds.push_back(root); 
+    Config::lookup<std::vector<LogDefine>>("logs",lds);
+}
+
+void LoggerManager::loadLog(const LogDefine & ld){
+    Logger::ptr ptr = getLogger(ld.name.c_str());    
+    for(auto & appender : ld.appenders){
+        ptr->addAppender(loadAppender(appender));
+    }
+}
+
+Appender::ptr LoggerManager::loadAppender(const AppenderDefine & ad){
+    Appender::ptr res;
+    if(ad.type == 0){//OstreamAppender
+        res = Appender::ptr(OstreamAppender::getInstance("ostream",std::cout));
+    } else {
+        res = Appender::ptr(FileAppender::getInstance("file",ad.file));
+    }
+    res->setLevel(ad.level);
+    if(ad.formatter_type == 0){
+        res->setFormatter(BasicFormatter::ptr(new BasicFormatter()));
+    } else {
+        PatternFormatter::ptr pfPtr = PatternFormatter::ptr(PatternFormatter::getInstance());
+        pfPtr->setConversionPattern(ad.pattern);
+        res->setFormatter(pfPtr);
+    }
+    return res;
+}
 
 LogEvent::ptr Logger::getEvent(LogLevel::Level level,const std::string & content){
 	LogEvent::ptr event = LogEvent::ptr(new LogEvent());

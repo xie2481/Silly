@@ -605,6 +605,8 @@ class LoggerWrap
         std::stringstream m_ss;
 };
 
+struct LogDefine;
+struct AppenderDefine;
 class LoggerManager 
 {
     public:
@@ -613,25 +615,27 @@ class LoggerManager
          * */
         static Logger::ptr getLogger(const char * name);
 
+        static void loadFromYaml(const std::string & file);
+
         /*
          * brief:读取日志配置文件
          * */
         //static void loadFromYaml(const std::string & file);
     private:
-        static std::unordered_map<std::string , Logger::ptr> m_loggers; 
-    
+        static std::unordered_map<std::string , Logger::ptr> m_loggers;
+
     private:
         /*
-         * brief:根据YAML文件获取日志器
+         * brief:完成日志的初始化
          * */
-        //static Logger::ptr createLogger(YAML::Node & node);
-        //static std::vector<Appender::ptr> createAppenders(YAML::Node & node);
-        /*
-         * brief:获取单个appender
-         * */
-        //static Appender::ptr getAppenderByNode(const YAML::Node & node);
-        //static void setAppener(Appender::ptr appender,std::string & level,const std::string & format,
-                                 //const std::string & pattern);
+       static void logInit(); 
+
+       /*
+        * brief:加载已解析的log
+        * */
+       static void loadLog(const LogDefine & ld);
+
+       static Appender::ptr loadAppender(const AppenderDefine & ad);
 };
 
 } //end of namespace

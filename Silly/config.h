@@ -34,7 +34,7 @@ class ConfigVarBase
         std::string getName() const { return m_name;} 
 
         //将string转换为相应的值
-        virtual void fromString(std::string str) = 0;
+        virtual void fromString(const std::string & str) = 0;
 
         //将值序列化为string
         virtual std::string toString() = 0;
@@ -76,7 +76,7 @@ class LexicalCast<std::vector<T>,std::string>
         std::string operator()(const std::vector<T> & val){
             YAML::Node node(YAML::NodeType::Sequence);
             for(auto & i : val){
-                node.push_back(YAML::Node(LexicalCast<T,std::string>()(i)));
+                node.push_back(YAML::Load(LexicalCast<T,std::string>()(i)));
             }
             std::stringstream ss;
             ss << node;
@@ -94,8 +94,11 @@ class LexicalCast<std::string,std::vector<T>>
         std::vector<T> operator()(const std::string & val){
             std::vector<T> vec;
             YAML::Node node = YAML::Load(val);
+            std::stringstream ss;
             for(size_t i = 0; i < node.size(); ++i){
-                vec.push_back(node[i].as<T>());
+                ss.str("");
+                ss << node[i];
+                vec.push_back(LexicalCast<std::string,T>()(ss.str()));
             }
             return vec;
         }
@@ -111,7 +114,7 @@ class LexicalCast<std::set<T>,std::string>
         std::string operator()(const std::set<T> & val){
             YAML::Node node(YAML::NodeType::Sequence);
             for(auto & i : val){
-                node.push_back(LexicalCast<T,std::string>()(i));
+                node.push_back(YAML::Load(LexicalCast<T,std::string>()(i)));
             }
             std::stringstream ss;
             ss << node;
@@ -129,8 +132,11 @@ class LexicalCast<std::string,std::set<T>>
         std::set<T> operator()(const std::string & val){
             std::set<T> s;
             YAML::Node node = YAML::Node(val);
+            std::stringstream ss;
             for(size_t i = 0; i < node.size(); ++i){
-                s.insert(node[i].as<T>());
+                ss.str("");
+                ss << node[i];
+                s.insert(LexicalCast<std::string,T>(ss.str()));
             }
             return s;
         }
@@ -146,7 +152,7 @@ class LexicalCast<std::list<T>,std::string>
         std::string operator()(const std::list<T> & val){
             YAML::Node node(YAML::NodeType::Sequence);
             for(auto & i : val){
-                node.push_back(LexicalCast<T,std::string>()(i));
+                node.push_back(YAML::Load(LexicalCast<T,std::string>()(i)));
             }
             std::stringstream ss;
             ss << node;
@@ -164,8 +170,11 @@ class LexicalCast<std::string,std::list<T>>
         std::list<T> operator()(const std::string & val){
             std::list<T> l;
             YAML::Node node = YAML::Load(val);
+            std::stringstream ss;
             for(size_t i = 0; i < node.size();++i){
-                l.push_back(node[i].as<T>());
+                ss.str("");
+                ss << node[i];
+                l.push_back(LexicalCast<std::string,T>(ss.str()));
             }
             return l;
         }
@@ -181,7 +190,7 @@ class LexicalCast<std::unordered_set<T>,std::string>
         std::string operator()(const std::unordered_set<T> & val){
             YAML::Node node(YAML::NodeType::Sequence);
             for(auto & i : val){
-                node.push_back(LexicalCast<T,std::string>()(i));
+                node.push_back(YAML::Load(LexicalCast<T,std::string>()(i)));
             }
             std::stringstream ss;
             ss << node;
@@ -199,8 +208,11 @@ class LexicalCast<std::string,std::unordered_set<T>>
         std::unordered_set<T> operator()(const std::string & val){
             YAML::Node node = YAML::Load(val);
             std::unordered_set<T> us;
+            std::stringstream ss;
             for(size_t i = 0; i < node.size(); ++i){
-               us.insert(node[i].as<T>()); 
+               ss.str("");
+               ss << node[i];
+               us.insert(LexicalCast<std::string,T>()(ss.str())); 
             }
             return us;
         }
@@ -301,20 +313,17 @@ class ConfigVar : public ConfigVarBase
                 cb.second(val,m_val);
             }
        }
-
-       void fromString(std::string str) override {
-            setVal(FromStr()(str));
-       }
-
-       std::string toString() override {
+    
+       std::string toString() override{
            return ToStr()(m_val);
        }
-       
-       //监听事件的操作
-       uint64_t addListener(on_change_cb cb){
-            uint64_t key = m_cbs.size();
-            m_cbs.insert(std::make_pair(key,cb));
-            return key;
+
+       void addListener(on_change_cb cb){
+            static int count = 0;
+            m_cbs.insert(std::make_pair(count++,cb));
+       }
+       void fromString(const std::string & str) override {
+            setVal(FromStr()(str));
        }
 
        void deleteListener(uint64_t key){

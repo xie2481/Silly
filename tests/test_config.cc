@@ -79,6 +79,23 @@ class LexicalCast<std::string,Person>
 };
 }
 ConfigVar<Person>::ptr p_test_person = Config::lookup<Person>("system.person",Person()); 
+void test1(){
+    SILLY_LOG_INFO("") << "before change" << p_test_person->getVal().toString();
+    p_test_person->addListener([](const Person & oldPerson,const Person & newPerson){
+            SILLY_LOG_INFO("") << "Change Person";
+            });
+    Config::loadFromYaml("/home/xie2481/Silly/bin/conf/log.yml");
+    std::map<std::string,int> e = p_test_map_int->getVal();
+    for(auto & i : e){
+        SILLY_LOG_INFO("") << "key " << i.first << " value: " << i.second;
+    }
+    SILLY_LOG_INFO("") << "after change" << p_test_person->getVal().toString();
+}
+
+void test2(){
+    LoggerManager::loadFromYaml("/home/xie2481/Silly/bin/conf/log.yml");
+    SILLY_LOG_INFO("root") << "test logs";
+}
 int main(){
     /*Config::addConfig<int>("test",1,"这是测试");
     auto var = Config::lookup<int>("test");
@@ -94,16 +111,6 @@ int main(){
     }*/
     //SILLY_LOG_EMERG("") << "create test" << 1;
     //SILLY_LOG_EMERG("root") << "create test" << 1;
-    
-    SILLY_LOG_INFO("") << "before change" << p_test_person->getVal().toString();
-    p_test_person->addListener([](const Person & oldPerson,const Person & newPerson){
-            SILLY_LOG_INFO("") << "Change Person";
-            });
-    Config::loadFromYaml("/home/xie2481/Silly/bin/conf/log.yml");
-    std::map<std::string,int> e = p_test_map_int->getVal();
-    for(auto & i : e){
-        SILLY_LOG_INFO("") << "key " << i.first << " value: " << i.second;
-    }
-    SILLY_LOG_INFO("") << "after change" << p_test_person->getVal().toString();
+   test2(); 
     return 0;
 }
