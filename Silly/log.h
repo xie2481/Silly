@@ -18,13 +18,21 @@
 #include <fstream>
 #include <stdarg.h>
 #include <string.h>
- 
+
+/*
+ * 记录日志是否被初始化
+ * */
+static bool isInited = false;
 #define SILLY_LOG_PREFIX \
     std::string(__FILE__) + std::string(" ")  \
     + std::to_string(__LINE__) + std::string(" ") \
     + std::string(__func__) + " " 
 
 #define SILLY_LOG_LEVEL(name,level) \
+    if(!isInited) {\
+        Silly::LoggerManager::loadFromYaml("/home/xie2481/Silly/bin/conf/log.yml"); \
+        isInited = true;\
+    } \
     Silly::LoggerWrap(name,level,__FILE__,__func__,__LINE__).getSS()
   
 #define SILLY_LOG_EMERG(name) \
