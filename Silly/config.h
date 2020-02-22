@@ -2,6 +2,7 @@
 #define __SILLY_CONFIG_H_
 
 #include "log.h"
+#include "thread.h"
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -299,12 +300,14 @@ class ConfigVar : public ConfigVarBase
        typedef std::shared_ptr<ConfigVar> ptr;
        ConfigVar(const std::string & name,T val)
        :ConfigVarBase(name),
-        m_val(val)
+        m_val(val),
+        m_mutex()
         {  }
         
        T getVal() const { return m_val; }
 
-       void setVal(T val){ 
+       void setVal(T val){
+           ReadScopeMutexLock<RWMutex> lock(m_mutex);
            if(m_val == val){
                 return;
            }
@@ -315,11 +318,13 @@ class ConfigVar : public ConfigVarBase
        }
     
        std::string toString() override{
+           WriteScopeMutexLock<RWMutex> lock(m_mutex);
            return ToStr()(m_val);
        }
 
        void addListener(on_change_cb cb){
             static int count = 0;
+            WriteScopeMutexLock<RWMutex> lock(m_mutex);
             m_cbs.insert(std::make_pair(count++,cb));
        }
        void fromString(const std::string & str) override {
@@ -327,22 +332,27 @@ class ConfigVar : public ConfigVarBase
        }
 
        void deleteListener(uint64_t key){
+            WriteScopeMutexLock<RWMutex> lock(m_mutex);
             m_cbs.erase(key);
        } 
 
        void clearListener(){
+            WriteScopeMutexLock<RWMutex> lock(m_mutex);
             m_cbs.clear();
        }
 
        on_change_cb getListener(uint64_t key){
-            auto it = m_cbs.find(key);
-            return it == m_cbs.end() ? nullptr : it->second;
+           ReadScopeMutexLock<RWMutex> lock(m_mutex);
+           auto it = m_cbs.find(key);
+           return it == m_cbs.end() ? nullptr : it->second;
        }
 
     private:
        T m_val;
        //使用64位做hash
        std::unordered_map<uint64_t,on_change_cb> m_cbs;
+       //读写锁
+       RWMutex m_mutex;
 };
 
 class Config
@@ -354,6 +364,7 @@ class Config
          * */
         template<typename T>
         static typename ConfigVar<T>::ptr lookup(const std::string & name,T val) {
+             ReadScopeMutexLock<RWMutex> lock(getMutex());
              auto it = getData().find(name);
              if(it == getData().end()){
                  typename ConfigVar<T>::ptr v(new ConfigVar<T>(name,val));
@@ -366,6 +377,7 @@ class Config
         }
         
         static ConfigVarBase::ptr lookupBase(const std::string & name){
+            ReadScopeMutexLock<RWMutex> lock(getMutex());
             auto it = getData().find(name);
             return it == getData().end() ? nullptr : it->second;
         }
@@ -381,6 +393,14 @@ class Config
         static ConfigVarMap & getData(){
             static ConfigVarMap configs;
             return configs;
+        }
+
+        /*
+         * brief:获取读写锁
+         */
+        static RWMutex & getMutex(){
+            static RWMutex mutex;
+            return mutex;
         }
 
         /*

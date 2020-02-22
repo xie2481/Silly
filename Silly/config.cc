@@ -29,6 +29,7 @@ void Config::listAllMember(const std::string & prefix,const YAML::Node & node,
 }
 
 void Config::loadFromYaml(const std::string & file){
+    ReadScopeMutexLock<RWMutex> lock(getMutex());
     YAML::Node root = YAML::LoadFile(file); 
     std::list<std::pair<std::string,YAML::Node>> output;
     std::unordered_map<std::string,int> dict;
