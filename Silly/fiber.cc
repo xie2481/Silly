@@ -76,6 +76,9 @@ namespace Silly {
 
 //获取当前协程
     Fiber * Fiber::GetThis(){
+        if(!cur_fiber){
+            return main_fiber.get();
+        }
         return cur_fiber;
     }
 
@@ -116,5 +119,15 @@ namespace Silly {
                      && cur_fiber->m_state != INIT
                      && cur_fiber->m_state != EXCEPT);
         cur_fiber->m_cb();
+    }
+
+    Fiber::~Fiber(){
+        SILLY_LOG_DEBUG("system") << "~Fiber()";
+        if(cur_fiber == this){
+            cur_fiber = nullptr;
+        }
+        if(m_ctx.uc_stack.ss_sp){
+            StackAllocator::Dealloc(m_ctx.uc_stack.ss_sp,m_size);
+        }
     }
 } // end of namespace

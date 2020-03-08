@@ -20,8 +20,10 @@ void test(){
     SILLY_LOG_INFO("root") << "finish fun";
 }
 int main(){
-    for(int i = 0; i < 5; ++i){
+    /*for(int i = 0; i < 5; ++i){
         Silly::Thread(test,"thread" + std::to_string(i)).join();
-    }
+    }*/
+    test();
+    test();
     return 0;
 }

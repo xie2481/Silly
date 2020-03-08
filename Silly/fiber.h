@@ -42,7 +42,8 @@ namespace Silly{
         uint64_t getId() const { return m_id;}
         //在协程栈空间上,重置当前协程
         void reset(std::function<void()> cb);
-
+        //析构函数
+        ~Fiber();
     public:
         //获取当前协程
         static Fiber * GetThis();
@@ -59,6 +60,7 @@ namespace Silly{
         Fiber();
         //执行协程的函数
         static void Main();
+
     private:
         //协程执行函数
         std::function<void()> m_cb = nullptr;
