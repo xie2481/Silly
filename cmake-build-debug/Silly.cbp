@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="Silly"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/home/xie2481/Silly/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/home/xie2481/Silly/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="testthread_log">
+				<Option output="/home/xie2481/Silly/bin/testthread_log" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/xie2481/Silly/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/xie2481/Silly/."/>
+					<Add directory="/home/xie2481/Silly/include"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 testthread_log"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="testthread_log/fast">
+				<Option output="/home/xie2481/Silly/bin/testthread_log" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/xie2481/Silly/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/xie2481/Silly/."/>
+					<Add directory="/home/xie2481/Silly/include"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 testthread_log/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="Silly">
+				<Option output="/home/xie2481/Silly/lib/libSilly.so" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/xie2481/Silly/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="3"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/xie2481/Silly/."/>
+					<Add directory="/home/xie2481/Silly/include"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 Silly"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="Silly/fast">
+				<Option output="/home/xie2481/Silly/lib/libSilly.so" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/xie2481/Silly/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="3"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/xie2481/Silly/."/>
+					<Add directory="/home/xie2481/Silly/include"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 Silly/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/home/xie2481/Silly/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="testassert">
+				<Option output="/home/xie2481/Silly/bin/testassert" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/xie2481/Silly/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/xie2481/Silly/."/>
+					<Add directory="/home/xie2481/Silly/include"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 testassert"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="testassert/fast">
+				<Option output="/home/xie2481/Silly/bin/testassert" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/xie2481/Silly/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/xie2481/Silly/."/>
+					<Add directory="/home/xie2481/Silly/include"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 testassert/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="testconfig">
+				<Option output="/home/xie2481/Silly/bin/testconfig" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/xie2481/Silly/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/xie2481/Silly/."/>
+					<Add directory="/home/xie2481/Silly/include"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 testconfig"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="testconfig/fast">
+				<Option output="/home/xie2481/Silly/bin/testconfig" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/xie2481/Silly/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/xie2481/Silly/."/>
+					<Add directory="/home/xie2481/Silly/include"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 testconfig/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="testfiber">
+				<Option output="/home/xie2481/Silly/bin/testfiber" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/xie2481/Silly/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/xie2481/Silly/."/>
+					<Add directory="/home/xie2481/Silly/include"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 testfiber"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="testfiber/fast">
+				<Option output="/home/xie2481/Silly/bin/testfiber" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/xie2481/Silly/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/xie2481/Silly/."/>
+					<Add directory="/home/xie2481/Silly/include"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 testfiber/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/xie2481/Silly/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/home/xie2481/Silly/Silly/config.cc">
+			<Option target="Silly"/>
+		</Unit>
+		<Unit filename="/home/xie2481/Silly/Silly/config.h">
+			<Option target="Silly"/>
+		</Unit>
+		<Unit filename="/home/xie2481/Silly/Silly/fiber.cc">
+			<Option target="Silly"/>
+		</Unit>
+		<Unit filename="/home/xie2481/Silly/Silly/fiber.h">
+			<Option target="Silly"/>
+		</Unit>
+		<Unit filename="/home/xie2481/Silly/Silly/log.cc">
+			<Option target="Silly"/>
+		</Unit>
+		<Unit filename="/home/xie2481/Silly/Silly/log.h">
+			<Option target="Silly"/>
+		</Unit>
+		<Unit filename="/home/xie2481/Silly/Silly/thread.cc">
+			<Option target="Silly"/>
+		</Unit>
+		<Unit filename="/home/xie2481/Silly/Silly/thread.h">
+			<Option target="Silly"/>
+		</Unit>
+		<Unit filename="/home/xie2481/Silly/Silly/util.cc">
+			<Option target="Silly"/>
+		</Unit>
+		<Unit filename="/home/xie2481/Silly/Silly/util.h">
+			<Option target="Silly"/>
+		</Unit>
+		<Unit filename="/home/xie2481/Silly/tests/test_assert.cc">
+			<Option target="testassert"/>
+		</Unit>
+		<Unit filename="/home/xie2481/Silly/tests/test_config.cc">
+			<Option target="testconfig"/>
+		</Unit>
+		<Unit filename="/home/xie2481/Silly/tests/test_fiber.cc">
+			<Option target="testfiber"/>
+		</Unit>
+		<Unit filename="/home/xie2481/Silly/tests/test_threadlog.cc">
+			<Option target="testthread_log"/>
+		</Unit>
+		<Unit filename="/home/xie2481/Silly/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

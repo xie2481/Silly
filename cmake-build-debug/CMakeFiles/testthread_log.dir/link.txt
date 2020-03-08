@@ -1,0 +1,1 @@
+/usr/bin/c++   -rdynamic -O3 -g -std=c++11 -Wall -Wno-deprecated -Werror -Wno-unused-function -g  -rdynamic CMakeFiles/testthread_log.dir/tests/test_threadlog.cc.o  -o ../bin/testthread_log  -L/home/xie2481/Silly/lib -Wl,-rpath,/home/xie2481/Silly/lib ../lib/libSilly.so -lyaml-cpp -lpthread 

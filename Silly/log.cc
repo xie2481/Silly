@@ -69,9 +69,9 @@ LogLevel::Level LogLevel::fromString(std::string & level){
     return LogLevel::INFO;
 }
 
-void Logger::log(LogLevel::Level level,const std::string & content){
+void Logger::log(const std::string & logName,LogLevel::Level level,const std::string & content){
 	//记录日志
-	auto event = getEvent(level,content);
+	auto event = getEvent(logName,level,content);
 	for(auto & it : m_appenders){//每个appender都要记录
 		it.second->log(event);
 	}
@@ -85,7 +85,7 @@ void Logger::log(LogLevel::Level level,const std::string & content){
     level(std::string(sprint_buf)) 
 
 void Logger::emerg(const std::string & content){
-	log(LogLevel::EMERG,content);
+	log(m_name,LogLevel::EMERG,content);
 }
 
 void Logger::emerg(const char * msg,...){
@@ -93,63 +93,63 @@ void Logger::emerg(const char * msg,...){
 }
 
 void Logger::fatal(const std::string & content){
-	log(LogLevel::FATAL,content);
+	log(m_name,LogLevel::FATAL,content);
 }
 void Logger::fatal(const char * msg,...){
     XX(msg,fatal);
 }
 
 void Logger::alert(const std::string & content){
-	log(LogLevel::ALERT,content);
+	log(m_name,LogLevel::ALERT,content);
 }
 void Logger::alert(const char * msg,...){
     XX(msg,alert);
 }
 
 void Logger::crit(const std::string & content){
-	log(LogLevel::CRIT,content);
+	log(m_name,LogLevel::CRIT,content);
 }
 void Logger::crit(const char * msg,...){
     XX(msg,crit);
 }
 
 void Logger::error(const std::string & content){
-	log(LogLevel::ERROR,content);
+	log(m_name,LogLevel::ERROR,content);
 }
 void Logger::error(const char * msg,...){
     XX(msg,error);
 }
 
 void Logger::warn(const std::string & content){
-	log(LogLevel::WARN,content);
+	log(m_name,LogLevel::WARN,content);
 }
 void Logger::warn(const char * msg,...){
     XX(msg,warn);
 }
 
 void Logger::notice(const std::string & content){
-	log(LogLevel::NOTICE,content);
+	log(m_name,LogLevel::NOTICE,content);
 }
 void Logger::notice(const char * msg,...){
     XX(msg,notice);
 }
 
 void Logger::info(const std::string & content){
-	log(LogLevel::INFO,content);
+	log(m_name,LogLevel::INFO,content);
 }
 void Logger::info(const char * msg,...){
     XX(msg,info);
 }
 
 void Logger::debug(const std::string & content){
-	log(LogLevel::DEBUG,content);
+	log(m_name,LogLevel::DEBUG,content);
 }
 void Logger::debug(const char * msg,...){
     XX(msg,debug);
 }
 
 void Logger::notset(const std::string & content){
-	log(LogLevel::NOTSET,content);
+	log(m_name,LogLevel::NOTSET,content);
 }
 void Logger::notset(const char * msg,...){
     XX(msg,notset);
@@ -370,7 +370,7 @@ void LoggerManager::logInit(){
     fileAppender.type = 1;
     ostreamAppender.level = fileAppender.level = LogLevel::INFO;
     ostreamAppender.formatter_type = fileAppender.formatter_type = 0;
-    fileAppender.file = "/home/xie2481/Silly/bin/log/root.txt";
+    fileAppender.file = "./log/root.txt";
     ads.push_back(fileAppender);
     ads.push_back(ostreamAppender);
     root.appenders = ads;
@@ -379,7 +379,7 @@ void LoggerManager::logInit(){
      * 定义system AppenderDefine
      * */
     ads.clear();
-    fileAppender.file = "/home/xie2481/Silly/bin/log/system.txt";
+    fileAppender.file = "./log/system.txt";
     ads.push_back(fileAppender);
     ads.push_back(ostreamAppender);
     system.appenders = ads;
@@ -414,8 +414,9 @@ Appender::ptr LoggerManager::loadAppender(const AppenderDefine & ad){
     return res;
 }
 
-LogEvent::ptr Logger::getEvent(LogLevel::Level level,const std::string & content){
+LogEvent::ptr Logger::getEvent(const std::string & logName,LogLevel::Level level,const std::string & content){
 	LogEvent::ptr event = LogEvent::ptr(new LogEvent());
+	event->setLogName(logName);
 	event->setLevel(level);
 	event->setContent(content);
 	return event;
@@ -425,11 +426,13 @@ LoggerWrap::LoggerWrap(const std::string & loggerName,LogLevel::Level level,cons
                 const std::string & func,int line)
 :m_loggerName(loggerName),
  m_level(level){
-     m_ss << filename << " " << func << " " << line << " " << Silly::getThreadID() << " ";   
+     WriteScopeMutexLock<MutexLock> lock(m_mutex);
+     m_ss << filename << " " << func << " " << line << " " << Silly::GetThreadID()
+          << " " << Silly::GetFiberID() << " ";
 }
 
 LoggerWrap::~LoggerWrap(){
-    LoggerManager::getLogger(m_loggerName.c_str())->log(m_level,m_ss.str());
+    LoggerManager::getLogger(m_loggerName.c_str())->log(m_loggerName,m_level,m_ss.str());
 }
 
 Appender::Appender(const char * name)
@@ -453,9 +456,11 @@ void OstreamAppender::log(LogEvent::ptr event){
 	//格式化器存在且输出日志级别高于Appender级别时，输出
 	if(m_formatter){
 		if(m_level >= event->getLevel()){
+		    WriteScopeMutexLock<MutexLock> lock(m_mutex);
 			m_os << m_formatter->format(event) << std::endl;
 		}
 	} else {
+        WriteScopeMutexLock<MutexLock> lock(m_mutex);
 		std::cout << "[Error] Formatter is Null!" << std::endl;
 	}	
 }
@@ -473,9 +478,11 @@ void FileAppender::log(LogEvent::ptr event){
 	//格式化器存在且输出日志级别高于Appender级别时，输出
 	if(m_formatter){
 		if(m_level >= event->getLevel()){
+            WriteScopeMutexLock<MutexLock> lock(m_mutex);
 			m_ofs << m_formatter->format(event) << std::endl;
 		}
 	} else {
+        WriteScopeMutexLock<MutexLock> lock(m_mutex);
 		m_ofs << "[Error] Formatter is Null!" << std::endl;
 	}	
 }
@@ -515,10 +522,12 @@ struct tm * TimeStamp::setTimePtr(){
 
 
 std::string BasicFormatter::format(const LogEvent::ptr event){
+    WriteScopeMutexLock<MutexLock> lock(m_mutex);
     m_ss.str("");
-	m_ss << "[" + LogLevel::toString(event->getLevel())
-			  << "] " <<  event->getTimeStamp().getTime()
-			  << " " << event->getContent();
+	m_ss << "[" << event->getLogName() << "]"
+	      <<"[" + LogLevel::toString(event->getLevel())
+	      << "] " <<  event->getTimeStamp().getTime()
+	      << " " << event->getContent();
 	return m_ss.str();
 };
 
@@ -555,10 +564,15 @@ void TabFormatterItem::format(std::stringstream & ss,const LogEvent::ptr event) 
 }
 
 void ThreadFormatterItem::format(std::stringstream & ss,const LogEvent::ptr event){
-    ss << Silly::getThreadID();      
+    ss << Silly::GetThreadID();
+}
+
+void FiberFormatterItem::format(std::stringstream &ss, const LogEvent::ptr event) {
+    ss << Silly::GetFiberID();
 }
 
 std::string PatternFormatter::format(const LogEvent::ptr event){
+    WriteScopeMutexLock<MutexLock> lock(m_mutex);
     m_ss.str("");
     for(auto & item : m_items){
         item->format(m_ss,event);
@@ -574,6 +588,7 @@ std::string PatternFormatter::format(const LogEvent::ptr event){
  * %p 优先级
  * %T Tab
  * %t ThreadID
+ * %f FiberID
  * 基本格式 %xx %xx{} %%转义
  * */
 void PatternFormatter::setConversionPattern(const std::string & pattern){
@@ -621,6 +636,9 @@ void PatternFormatter::setPattern(const std::string & pattern,unsigned & begin){
         case 't':
              m_items.push_back(ThreadFormatterItem::ptr(new ThreadFormatterItem()));
              break;
+        case 'f':
+            m_items.push_back(FiberFormatterItem::ptr(new FiberFormatterItem()));
+            break;
         default:
              --begin;
              break;

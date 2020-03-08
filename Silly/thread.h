@@ -161,7 +161,7 @@ namespace Silly{
             Thread(const std::function<void()> & cb,const std::string & name);
             std::string getName() const { return m_name;}
             void join();
-            uint32_t getID() const { return Silly::getThreadID(); }
+            uint32_t getID() const { return Silly::GetThreadID(); }
             ~Thread();
              
             static Thread * GetThis();

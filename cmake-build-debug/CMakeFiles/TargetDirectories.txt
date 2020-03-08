@@ -1,0 +1,7 @@
+/home/xie2481/Silly/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/xie2481/Silly/cmake-build-debug/CMakeFiles/testthread_log.dir
+/home/xie2481/Silly/cmake-build-debug/CMakeFiles/Silly.dir
+/home/xie2481/Silly/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/xie2481/Silly/cmake-build-debug/CMakeFiles/testassert.dir
+/home/xie2481/Silly/cmake-build-debug/CMakeFiles/testconfig.dir
+/home/xie2481/Silly/cmake-build-debug/CMakeFiles/testfiber.dir

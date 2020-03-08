@@ -93,7 +93,7 @@ void test1(){
 }
 
 void test2(){
-    LoggerManager::loadFromYaml("/home/xie2481/Silly/bin/conf/log.yml");
+    LoggerManager::loadFromYaml("./conf/log.yml");
     SILLY_LOG_INFO("root") << "test logs";
 }
 int main(){

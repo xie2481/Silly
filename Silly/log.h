@@ -8,62 +8,59 @@
 #ifndef _LOG_H__
 #define _LOG_H__
 
+#include "thread.h"
 #include <yaml-cpp/yaml.h>
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <sstream>
-#include <time.h>
+#include <ctime>
 #include <vector>
 #include <fstream>
-#include <stdarg.h>
-#include <string.h>
+#include <cstdarg>
+#include <cstring>
 
 /*
  * 记录日志是否被初始化
  * */
 static bool isInited = false;
-#define SILLY_LOG_PREFIX \
-    std::string(__FILE__) + std::string(" ")  \
-    + std::to_string(__LINE__) + std::string(" ") \
-    + std::string(__func__) + " " 
 
 #define SILLY_LOG_LEVEL(name,level) \
     if(!isInited) {\
-        Silly::LoggerManager::loadFromYaml("/home/xie2481/Silly/bin/conf/log.yml"); \
+        Silly::LoggerManager::loadFromYaml("./conf/log.yml"); \
         isInited = true;\
     } \
     Silly::LoggerWrap(name,level,__FILE__,__func__,__LINE__).getSS()
   
 #define SILLY_LOG_EMERG(name) \
-    SILLY_LOG_LEVEL(name,LogLevel::EMERG)
+    SILLY_LOG_LEVEL(name,Silly::LogLevel::EMERG)
 
 #define SILLY_LOG_FATAL(name) \
-    SILLY_LOG_LEVEL(name,LogLevel::FATAL)
+    SILLY_LOG_LEVEL(name,Silly::LogLevel::FATAL)
 
 #define SILLY_LOG_ALERT(name) \
-    SILLY_LOG_LEVEL(name,LogLevel::ALERT)
+    SILLY_LOG_LEVEL(name,Silly::LogLevel::ALERT)
 
 #define SILLY_LOG_CRIT(name) \
-    SILLY_LOG_LEVEL(name,LogLevel::CRIT)
+    SILLY_LOG_LEVEL(name,Silly::LogLevel::CRIT)
 
 #define SILLY_LOG_ERROR(name) \
-    SILLY_LOG_LEVEL(name,LogLevel::ERROR)
+    SILLY_LOG_LEVEL(name,Silly::LogLevel::ERROR)
 
 #define SILLY_LOG_WARN(name) \
-    SILLY_LOG_LEVEL(name,LogLevel::WARN)
+    SILLY_LOG_LEVEL(name,Silly::LogLevel::WARN)
 
 #define SILLY_LOG_NOTICE(name) \
-    SILLY_LOG_LEVEL(name,LogLevel::NOTICE)
+    SILLY_LOG_LEVEL(name,Silly::LogLevel::NOTICE)
 
 #define SILLY_LOG_INFO(name) \
-    SILLY_LOG_LEVEL(name,LogLevel::INFO)
+    SILLY_LOG_LEVEL(name,Silly::LogLevel::INFO)
 
 #define SILLY_LOG_DEBUG(name) \
-    SILLY_LOG_LEVEL(name,LogLevel::DEBUG)
+    SILLY_LOG_LEVEL(name,Silly::LogLevel::DEBUG)
 
 #define SILLY_LOG_NOTSET(name) \
-    SILLY_LOG_LEVEL(name,LogLevel::NOTSET)
+    SILLY_LOG_LEVEL(name,Silly::LogLevel::NOTSET)
 
 
 namespace Silly{
@@ -212,6 +209,7 @@ class Appender;
 class Formatter{
 public:
 	typedef std::shared_ptr<Formatter> ptr;
+	typedef RWMutex MutexLock;
 	virtual ~Formatter() {}
 
 	/*
@@ -221,6 +219,7 @@ public:
 protected:
 	//格式化日志格式时使用，存储下来，防止多次创建造成的开销
 	std::stringstream m_ss;
+	MutexLock m_mutex;
 };
 
 //定义基础的日志格式器
@@ -306,7 +305,12 @@ class ThreadFormatterItem : public FormatterItem
         typedef std::shared_ptr<ThreadFormatterItem> ptr;
         void format(std::stringstream & ss,const LogEvent::ptr event) override;
 };
-
+class FiberFormatterItem : public FormatterItem
+{
+public:
+    typedef std::shared_ptr<FiberFormatterItem> ptr;
+    void format(std::stringstream & ss,const LogEvent::ptr event) override;
+};
 class PatternFormatter : public Formatter
 {
     public:
@@ -343,6 +347,7 @@ class PatternFormatter : public Formatter
 class Appender{
 	friend class Logger;
 public:
+    typedef RWMutex MutexLock;
 	typedef std::shared_ptr<Appender> ptr;
 
 	/*
@@ -380,6 +385,8 @@ protected:
 	LogLevel::Level m_level;
 	//Appender的格式化器
 	Formatter::ptr m_formatter;
+
+	MutexLock m_mutex;
 private:
 	virtual void log(LogEvent::ptr event) = 0;
 };
@@ -432,10 +439,11 @@ public:
 
 	/*
 	 * brief:所有等级的日志记录调用接口
+	 * parmarter[in] logName:日志名称
 	 * parmarter[in] level:日志等级
 	 * parmarter[in] content:记录内容
 	 * */
-	void log(Silly::LogLevel::Level level,const std::string & content);
+	void log(const std::string & logName,Silly::LogLevel::Level level,const std::string & content);
 
 	/*
 	 * brief:emerg级别记录
@@ -590,11 +598,12 @@ private:
 private:
 	/*
 	 * brief:获取LogEvent指针
+	 * parmarter [in] logName:日志名称
 	 * parmarter [in] level:日志事件级别
 	 * parmarter [in] content:日志事件内容
 	 * parmarter [out] LogEvent指针
 	 * */
-    LogEvent::ptr getEvent(Silly::LogLevel::Level level,const std::string & content);
+    LogEvent::ptr getEvent(const std::string & logName,Silly::LogLevel::Level level,const std::string & content);
 };
 
 /*
@@ -602,6 +611,7 @@ private:
  * */
 class LoggerWrap
 {
+    typedef RWMutex MutexLock;
     public:
         LoggerWrap(const std::string & loggerName,LogLevel::Level level,const std::string & filename,
                 const std::string & func,int line);
@@ -611,6 +621,7 @@ class LoggerWrap
         std::string m_loggerName;
         LogLevel::Level m_level;
         std::stringstream m_ss;
+        MutexLock m_mutex;
 };
 
 struct LogDefine;

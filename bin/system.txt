@@ -1,0 +1,46 @@
+[INFO] 2020-02-29 18:52:39 /home/xie2481/Silly/Silly/util.cc Assert 44 10167 1 == 0
+[ERROR] 2020-02-29 18:55:57 /home/xie2481/Silly/Silly/util.cc Assert 45 10274 Assertion '1 == 0' failed.
+Backtrace: 
+/home/xie2481/Silly/lib/libSilly.so(_ZN5Silly6AssertEbRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE+0x189) [0x7f0d47028b49]
+/home/xie2481/Silly/cmake-build-debug/../bin/testassert(_Z10testAssertv+0x4a) [0x564a2bc9ffaa]
+/home/xie2481/Silly/cmake-build-debug/../bin/testassert(main+0x9) [0x564a2bc9f999]
+/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xe7) [0x7f0d46477b97]
+/home/xie2481/Silly/cmake-build-debug/../bin/testassert(_start+0x2a) [0x564a2bc9f9ca]
+[system][ERROR] 2020-02-29 19:11:15 /home/xie2481/Silly/Silly/util.cc Assert 45 10415 Assertion '1 == 0' failed.
+Backtrace: 
+/home/xie2481/Silly/lib/libSilly.so(_ZN5Silly6AssertEbRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE+0x189) [0x7fad834cac69]
+/home/xie2481/Silly/cmake-build-debug/../bin/testassert(_Z10testAssertv+0x4a) [0x558f79035faa]
+/home/xie2481/Silly/cmake-build-debug/../bin/testassert(main+0x9) [0x558f79035999]
+/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xe7) [0x7fad82919b97]
+/home/xie2481/Silly/cmake-build-debug/../bin/testassert(_start+0x2a) [0x558f790359ca]
+[system][ERROR] 2020-02-29 19:16:39 /home/xie2481/Silly/Silly/util.cc Assert 45 10516 Assertion '1 == 0' failed.
+Backtrace: 
+/home/xie2481/Silly/lib/libSilly.so(_ZN5Silly6AssertEbRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE+0x189) [0x7f78b1e71c69]
+/home/xie2481/Silly/cmake-build-debug/../bin/testassert(_Z10testAssertv+0x4a) [0x55bc7075ffaa]
+/home/xie2481/Silly/cmake-build-debug/../bin/testassert(main+0x9) [0x55bc7075f999]
+/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xe7) [0x7f78b12c0b97]
+/home/xie2481/Silly/cmake-build-debug/../bin/testassert(_start+0x2a) [0x55bc7075f9ca]
+[system][ERROR] 2020-03-01 22:18:04 /home/xie2481/Silly/tests/test_assert.cc testAssert 18 12669 Assertion '0' failed.
+Backtrace: 
+/home/xie2481/Silly/cmake-build-debug/../bin/testassert(_Z10testAssertv+0x1f4) [0x55d2af3c3f54]
+/home/xie2481/Silly/cmake-build-debug/../bin/testassert(main+0x9) [0x55d2af3c3969]
+/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xe7) [0x7f6515deeb97]
+/home/xie2481/Silly/cmake-build-debug/../bin/testassert(_start+0x2a) [0x55d2af3c399a]
+[system][ERROR] 2020-03-01 22:18:28 /home/xie2481/Silly/tests/test_assert.cc testAssert 18 12702 Assertion '(1 == 0)' failed.
+Backtrace: 
+/home/xie2481/Silly/cmake-build-debug/../bin/testassert(_Z10testAssertv+0x1fd) [0x562047bd2f0d]
+/home/xie2481/Silly/cmake-build-debug/../bin/testassert(main+0x9) [0x562047bd2919]
+/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xe7) [0x7fe796ccdb97]
+/home/xie2481/Silly/cmake-build-debug/../bin/testassert(_start+0x2a) [0x562047bd294a]
+[system][ERROR] 2020-03-01 22:21:48 /home/xie2481/Silly/tests/test_assert.cc testAssert 18 12736 Assertion '1 == 0' failed.
+Backtrace: 
+/home/xie2481/Silly/cmake-build-debug/../bin/testassert(_Z10testAssertv+0x1fd) [0x55c793ac3f0d]
+/home/xie2481/Silly/cmake-build-debug/../bin/testassert(main+0x9) [0x55c793ac3919]
+/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xe7) [0x7f669a2aeb97]
+/home/xie2481/Silly/cmake-build-debug/../bin/testassert(_start+0x2a) [0x55c793ac394a]
+[system][ERROR] 2020-03-07 18:11:58 /home/xie2481/Silly/Silly/fiber.cc swapIn 40 4801 Assertion 'm_state != TERM && m_state != INIT && m_state != EXCEPT' failed.
+Backtrace:
+/home/xie2481/Silly/lib/libSilly.so(_ZN5Silly5Fiber6swapInEv+0x1de) [0x7f716dd96c3e]
+/home/xie2481/Silly/cmake-build-debug/../bin/testfiber(main+0x86) [0x555d60ca5c86]
+/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xe7) [0x7f716d1d9b97]
+/home/xie2481/Silly/cmake-build-debug/../bin/testfiber(_start+0x2a) [0x555d60ca5d4a]
